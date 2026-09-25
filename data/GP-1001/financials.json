@@ -1,0 +1,17 @@
+{
+  "client": "Gulf Pearl Foods Trading W.L.L.",
+  "fy2025": {
+    "revenue_kwd": 18400000,
+    "net_income_kwd": 1310000,
+    "total_assets_kwd": 9600000,
+    "total_equity_kwd": 4100000,
+    "interest_bearing_debt_kwd": 900000,
+    "interest_income_pct": 0.0,
+    "gross_margin_pct": 14.2,
+    "auditor": "Al-Muzaffar & Co - clean opinion"
+  },
+  "fy2024": {
+    "revenue_kwd": 16100000,
+    "net_income_kwd": 1020000
+  }
+}

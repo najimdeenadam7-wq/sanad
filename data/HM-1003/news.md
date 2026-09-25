@@ -1,0 +1,2 @@
+2026-06-18 Kuwait Times: Hilal Medical Supplies awards KWD 3.1M Ministry of Health tender for consumables.
+2026-03-09 Mubasher: Hilal Medical Supplies holds 22% stake in Gulf Shield Conventional Insurance Broker K.S.C., acquired 2024.

@@ -1,0 +1,4 @@
+streamlit>=1.37
+pypdf>=4.0
+python-docx>=1.1
+anthropic>=0.40   # optional — only if using ANTHROPIC_API_KEY

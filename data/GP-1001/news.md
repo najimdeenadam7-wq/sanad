@@ -1,0 +1,2 @@
+2026-05-11 Al-Anbaa: Gulf Pearl Foods commissions 4,000 sqm cold-chain facility in Shuwaikh Industrial Area.
+2026-08-03 Meed: Kuwaiti food distributors report margin pressure from freight costs; Gulf Pearl among few with own logistics fleet.

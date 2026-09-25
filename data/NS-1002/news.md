@@ -1,0 +1,2 @@
+2026-04-22 Meed: NovaSteel awards KWD 9.8M EPC subcontract for Gulf logistics hub project.
+2026-07-30 Reuters: regional steel prices volatile on import duties; Kuwaiti mills partially shielded by local demand.

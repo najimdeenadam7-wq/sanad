@@ -1,0 +1,17 @@
+{
+  "client": "NovaSteel Industries K.S.C.",
+  "fy2025": {
+    "revenue_kwd": 41200000,
+    "net_income_kwd": 2870000,
+    "total_assets_kwd": 13100000,
+    "total_equity_kwd": 5200000,
+    "interest_bearing_debt_kwd": 5400000,
+    "interest_income_pct": 8.4,
+    "gross_margin_pct": 11.9,
+    "auditor": "BDO Al-Nibari & Co - clean opinion"
+  },
+  "fy2024": {
+    "revenue_kwd": 37800000,
+    "net_income_kwd": 2310000
+  }
+}

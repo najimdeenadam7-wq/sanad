@@ -1,0 +1,17 @@
+{
+  "client": "Hilal Medical Supplies Co. K.S.C.",
+  "fy2025": {
+    "revenue_kwd": 12700000,
+    "net_income_kwd": 940000,
+    "total_assets_kwd": 6400000,
+    "total_equity_kwd": 2900000,
+    "interest_bearing_debt_kwd": 600000,
+    "interest_income_pct": 0.0,
+    "gross_margin_pct": 18.3,
+    "auditor": "EY Al-Aiban & Co - clean opinion"
+  },
+  "fy2024": {
+    "revenue_kwd": 10900000,
+    "net_income_kwd": 760000
+  }
+}
