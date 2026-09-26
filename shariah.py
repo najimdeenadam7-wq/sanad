@@ -1,15 +1,26 @@
-"""Rules-based Shariah pre-screen — the Warba-specific differentiator."""
+"""Rules-based Shariah pre-screen — the Warba-specific differentiator.
+Configurable materiality: SANAD_II_THRESHOLD (flag above %), II_MATERIAL (severity split)."""
+import os
+
 SCREENED = ["alcohol","gambling","gaming","tobacco","pork","conventional insurance"]
+II_THRESHOLD = float(os.environ.get("SANAD_II_THRESHOLD", "0.0"))
+II_MATERIAL = 5.0
 
 def screen(fin: dict, chunks):
     flags, fy = [], fin.get("fy2025", {})
     fin_chunk = next((c for c in chunks if c.doc == "financials.json"), None)
     ev = fin_chunk.chunk_id if fin_chunk else "n/a"
     ii = fy.get("interest_income_pct", 0.0)
-    if ii > 0:
-        flags.append(dict(rule="R1 interest income", severity="HIGH",
-            finding=f"Conventional interest income of {ii}% of revenue detected (idle cash in conventional deposit).",
-            evidence=ev, recommendation="Income-purification plan (charitable disposal) and migrate idle cash to Warba Islamic structures; refer to Shariah Control Unit per AAOIFI Shari'ah standards."))
+    if ii > II_THRESHOLD:
+        high = ii > II_MATERIAL
+        flags.append(dict(rule="R1 interest income", severity="HIGH" if high else "MEDIUM",
+            finding=f"Conventional interest income of {ii}% of revenue detected (screening threshold {II_THRESHOLD}%).",
+            evidence=ev,
+            recommendation=("Income-purification plan (charitable disposal) and migrate idle cash to Warba Islamic "
+                            "structures; refer to Shariah Control Unit per AAOIFI Shari'ah standards."
+                            if high else
+                            "Below 5% materiality: purify interest income via charitable disposal per SCU "
+                            "methodology, monitor quarterly; propose Wakala placement for idle cash.")))
     assets = fy.get("total_assets_kwd", 1); debt = fy.get("interest_bearing_debt_kwd", 0)
     if assets and debt / assets > 0.33:
         flags.append(dict(rule="R2 conventional leverage", severity="MEDIUM",
@@ -25,7 +36,7 @@ def screen(fin: dict, chunks):
                 recommendation="Quantify non-compliant revenue share; propose divestment or ring-fencing via SPV per Shariah Board guidance before facility approval."))
             break
     score = max(0, 100 - sum(40 if f["severity"]=="HIGH" else 15 for f in flags))
-    return dict(flags=flags, score=score)
+    return dict(flags=flags, score=score, threshold=II_THRESHOLD)
 
 def zakat_estimate(fin: dict) -> dict:
     """Simplified corporate Zakat base (net invested funds proxy), 2.5% rate."""

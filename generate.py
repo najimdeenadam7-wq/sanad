@@ -1,6 +1,7 @@
 """Citation-first memo assembly.
 LLM prose via Anthropic OR any OpenAI-compatible endpoint (NVIDIA NIM, Groq,
-OpenRouter, local Ollama). No key? Extractive fallback — always works, zero cost."""
+OpenRouter, local Ollama). No key? Extractive fallback — grouped per source,
+always works, zero cost."""
 import json as _json
 import os, re, urllib.request
 
@@ -64,6 +65,18 @@ def sanitize_citations(text, known):
     """Anti-hallucination gate: strip any citation not in the retrieved set."""
     return CIT.sub(lambda m: m.group(0) if m.group(1) in known else "", text)
 
+def _extractive(picked):
+    """Offline fallback, grouped per source document for judge-readable output."""
+    if not picked: return "_No relevant sources retrieved for this section._"
+    by_doc = {}
+    for c in picked:
+        by_doc.setdefault(c.doc, []).append(c)
+    out = []
+    for doc, cs in by_doc.items():
+        out.append(f"**{doc}**")
+        out += [f"- {_snippet(c)} [{c.chunk_id}]" for c in cs]
+    return "\n".join(out)
+
 def assemble(client, chunks, bm, use_llm=True):
     sections, llm_used, fallbacks = [], 0, 0
     known = {c.chunk_id for c in chunks}
@@ -80,7 +93,7 @@ def assemble(client, chunks, bm, use_llm=True):
         if text: llm_used += 1
         else:
             fallbacks += 1
-            text = "\n".join(f"- {_snippet(c)} [{c.chunk_id}]" for c in picked)
+            text = _extractive(picked)
         text = sanitize_citations(text, known)
         sections.append(dict(id=sid, title=title, text=text.strip()))
     cites = list(dict.fromkeys(CIT.findall("\n\n".join(s["text"] for s in sections))))

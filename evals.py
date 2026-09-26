@@ -1,8 +1,8 @@
-"""Sanad eval harness — run: python evals.py
-Prints a results table and writes eval_report.md for the submission pack."""
-import json, os, time
+"""Sanad eval harness v2 — run: python evals.py
+Writes eval_report.md for the submission pack."""
+import json, os, shutil, time
 from pathlib import Path
-import ingest, retrieve, generate, shariah, gaps, structure
+import ingest, retrieve, generate, shariah, gaps, structure, governance
 from generate import CIT
 
 DATA = Path("data")
@@ -23,6 +23,19 @@ EXPECT = {
  "SD-1004": dict(score=100, flags=set(), gaps=set(), cr="305501-2020",
      timeline=6, shareholders=3, zakat_due=20000.0),
 }
+
+RETRIEVAL = [
+ ("GP-1001","revenue net income margin audited","financials.json"),
+ ("GP-1001","shareholders liens registry","registry.md"),
+ ("GP-1001","board resolution UBO declaration requested","emails.md"),
+ ("NS-1002","conventional term deposit interest income","crm_notes.md"),
+ ("NS-1002","mortgage plant conventional bank","registry.md"),
+ ("NS-1002","AML screening expired refreshed","emails.md"),
+ ("HM-1003","Kuwait Times consumables tender","news.md"),
+ ("HM-1003","auditor rotation statements expected","crm_notes.md"),
+ ("SD-1004","Wakala deposit surplus cash","crm_notes.md"),
+ ("SD-1004","warehousing contract Kuwait Food Union","news.md"),
+]
 
 CHECKS = []
 def check(name, client, ok, detail=""):
@@ -66,9 +79,40 @@ for cid, meta in CLIENTS.items():
     check("Offline determinism", cid, memo2["sections"] == memo["sections"])
     check("Assembly < 5s", cid, el < 5.0, f"{el:.2f}s")
 
-# Unit test: anti-hallucination gate
+# Retrieval quality: recall@3 on a designed query set
+for rcid, q, want in RETRIEVAL:
+    chs = ingest.all_chunks(ingest.load_client(DATA/rcid))
+    bmx = retrieve.BM25(chs)
+    check(f"Recall@3: {q[:30]}…", rcid, any(c.doc == want for c in bmx.search(q, 3)), f"want {want}")
+
+# Anti-hallucination gate (unit)
 gate = generate.sanitize_citations("claim [SRC-999#c9] ok [SRC-001#c0]", {"SRC-001#c0"})
 check("Hallucinated cite stripped", "unit", "SRC-999" not in gate and "SRC-001#c0" in gate, gate.strip())
+
+# Governance: tamper-evident audit chain (verified by recomputation)
+gov_log = Path("_eval_audit.log")
+governance.AUDIT = gov_log
+if gov_log.exists(): gov_log.unlink()
+governance.log_event("eval", "test_a", "GP-1001", "first")
+governance.log_event("eval", "test_b", "NS-1002", "second")
+lines = [json.loads(l) for l in gov_log.read_text(encoding="utf-8").strip().splitlines()]
+prev, ok_chain = "0"*16, True
+for obj in lines:
+    payload = json.dumps({k: v for k, v in obj.items() if k != "hash"}, sort_keys=True)
+    if governance._chain_hash(prev, payload) != obj["hash"]: ok_chain = False
+    prev = obj["hash"]
+check("Audit chain tamper-evident", "unit", ok_chain and len(lines) == 2, f"{len(lines)} events")
+gov_log.unlink(missing_ok=True)
+
+# Governance: SCU review queue roundtrip
+tmp = DATA/"_evaltmp"; tmp.mkdir(exist_ok=True)
+governance.save_review("_evaltmp", {"R1 interest income": dict(status="approved", note="ok")})
+rq = governance.load_review("_evaltmp")
+check("SCU review queue roundtrip", "unit", rq.get("R1 interest income", {}).get("status") == "approved")
+shutil.rmtree(tmp, ignore_errors=True)
+
+check("Consent basis metadata", "unit", set(governance.CONSENT_BASIS) >= {"internal","external"})
+check("Role model defined", "unit", governance.ROLES == ["rm","credit","scu"])
 
 # Optional: LLM-mode citation gate (runs with ANY provider key)
 if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("OPENAI_API_KEY"):
