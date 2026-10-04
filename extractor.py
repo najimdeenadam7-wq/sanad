@@ -158,37 +158,29 @@ def _parse_json_safely(text: str) -> dict:
         return {}
 
 def _heuristic_fallback(text: str) -> dict:
-    """Deterministic regex extraction fallback if LLM is unavailable or 429 rate limited."""
-    name_m = re.search(r"(?:Company|Client|Name|AL-MANAR[^\n\r]*|GULF[^\n\r]*):\s*([^\n\r]+)", text, re.I)
+    """Deterministic dynamic regex extraction fallback if LLM is unavailable."""
+    name_m = re.search(r"(?:Company|Client|Entity|Legal Name):\s*([^\n\r]+)", text, re.I)
     if not name_m:
-        if "Al-Manar" in text or "AL-MANAR" in text:
-            client_name = "Al-Manar Industrial & Logistics K.S.C.C."
-        elif "Gulf Retail" in text:
-            client_name = "Gulf Retail & Distribution K.S.C.C."
-        else:
-            client_name = "Extracted Corporate Entity"
-    else:
-        client_name = name_m.group(1).strip()
+        name_m = re.search(r"^([A-Z0-9\s\,\.\&\-]{4,60}\s+(?:K\.S\.C\.C\.|W\.L\.L\.|K\.S\.C\.P\.|Co\.|Corp|Ltd))", text, re.M)
+    
+    client_name = name_m.group(1).strip() if name_m else "Extracted Corporate Entity"
 
     cr_m = re.search(r"(?:CR\s*(?:No\.?|Number)|Registration):\s*([0-9\-KW]+)", text, re.I)
-    if not cr_m and "482910" in text:
-        cr_num = "482910-KW"
-    else:
-        cr_num = cr_m.group(1).strip() if cr_m else "482910-KW"
+    cr_num = cr_m.group(1).strip() if cr_m else "—"
 
-    rev_m = re.search(r"(?:Gross Operating Revenue|Revenue|Turnover)[^\n]*?([0-9,]{6,12})", text, re.I)
-    ni_m = re.search(r"(?:Net Profit|Net Income)[^\n]*?([0-9,]{6,12})", text, re.I)
-    ast_m = re.search(r"(?:TOTAL ASSETS)[^\n]*?([0-9,]{6,12})", text, re.I)
-    eq_m = re.search(r"(?:TOTAL EQUITY|Share Capital)[^\n]*?([0-9,]{6,12})", text, re.I)
-    dbt_m = re.search(r"(?:Conventional Interest-Bearing Debt|TOTAL LIABILITIES|Debt)[^\n]*?([0-9,]{6,12})", text, re.I)
-    ii_m = re.search(r"(?:Conventional Deposit Interest Income|Interest Income|Non-Permissible)[^\n]*?([0-9,]{4,9})", text, re.I)
+    rev_m = re.search(r"(?:Gross Operating Revenue|Revenue|Turnover)[^\n]*?([0-9,]{4,12})", text, re.I)
+    ni_m = re.search(r"(?:Net Profit|Net Income)[^\n]*?([0-9,]{4,12})", text, re.I)
+    ast_m = re.search(r"(?:TOTAL ASSETS)[^\n]*?([0-9,]{4,12})", text, re.I)
+    eq_m = re.search(r"(?:TOTAL EQUITY|Share Capital)[^\n]*?([0-9,]{4,12})", text, re.I)
+    dbt_m = re.search(r"(?:Conventional Interest-Bearing Debt|TOTAL LIABILITIES|Debt)[^\n]*?([0-9,]{4,12})", text, re.I)
+    ii_m = re.search(r"(?:Conventional Deposit Interest Income|Interest Income|Non-Permissible)[^\n]*?([0-9,]{3,9})", text, re.I)
 
-    revenue_val = float(rev_m.group(1).replace(",", "")) if rev_m else 12000000.0
-    net_income_val = float(ni_m.group(1).replace(",", "")) if ni_m else 1350000.0
-    assets_val = float(ast_m.group(1).replace(",", "")) if ast_m else 12500000.0
-    equity_val = float(eq_m.group(1).replace(",", "")) if eq_m else 5100000.0
-    debt_val = float(dbt_m.group(1).replace(",", "")) if dbt_m else 3400000.0
-    ii_val = float(ii_m.group(1).replace(",", "")) if ii_m else 340000.0
+    revenue_val = float(rev_m.group(1).replace(",", "")) if rev_m else 0.0
+    net_income_val = float(ni_m.group(1).replace(",", "")) if ni_m else 0.0
+    assets_val = float(ast_m.group(1).replace(",", "")) if ast_m else 0.0
+    equity_val = float(eq_m.group(1).replace(",", "")) if eq_m else 0.0
+    debt_val = float(dbt_m.group(1).replace(",", "")) if dbt_m else 0.0
+    ii_val = float(ii_m.group(1).replace(",", "")) if ii_m else 0.0
 
     sh_list = []
     for m in re.finditer(r"([A-Za-z\s\-]+)\s*\(?(\d+)%\)?", text):
