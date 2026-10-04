@@ -7,35 +7,62 @@ II_THRESHOLD = float(os.environ.get("SANAD_II_THRESHOLD", "0.0"))
 II_MATERIAL = 5.0
 
 def screen(fin: dict, chunks):
-    flags, fy = [], (fin or {}).get("fy2025", {})
-    fin_chunk = next((c for c in chunks if c.doc == "financials.json"), None)
-    ev = fin_chunk.chunk_id if fin_chunk else "n/a"
-    ii = fy.get("interest_income_pct", 0.0)
-    if fy and ii > II_THRESHOLD:
-        high = ii > II_MATERIAL
-        flags.append(dict(rule="R1 interest income", severity="HIGH" if high else "MEDIUM",
-            finding=f"Conventional interest income of {ii}% of revenue detected (screening threshold {II_THRESHOLD}%).",
+    flags = []
+    fy = (fin or {}).get("fy2025", {}) or (fin.get("fiscal_years", [{}])[-1] if isinstance(fin.get("fiscal_years"), list) and fin.get("fiscal_years") else {})
+    fin_chunk = next((c for c in chunks if getattr(c, "doc", "") == "financials.json"), None)
+    ev = getattr(fin_chunk, "chunk_id", "n/a")
+    
+    # 1. Non-Permissible / Interest Income
+    rev = fy.get("revenue_kwd") or fy.get("revenue") or 1.0
+    ii_amount = fy.get("non_permissible_income") or fy.get("interest_income_kwd") or fy.get("interest_income") or 0.0
+    ii_pct = fy.get("interest_income_pct", 0.0) or ((ii_amount / rev * 100) if rev and ii_amount else 0.0)
+    
+    if ii_pct > 0.0 or ii_amount > 0:
+        high = ii_pct > II_MATERIAL
+        flags.append(dict(
+            rule="R1 interest income", severity="HIGH" if high else "MEDIUM",
+            finding=f"Conventional interest income of KWD {ii_amount:,.0f} ({ii_pct:.2f}% of revenue) detected.",
             evidence=ev,
-            recommendation=("Income-purification plan (charitable disposal) and migrate idle cash to Warba Islamic "
-                            "structures; refer to Shariah Control Unit per AAOIFI Shari'ah standards."
-                            if high else
-                            "Below 5% materiality: purify interest income via charitable disposal per SCU "
-                            "methodology, monitor quarterly; propose Wakala placement for idle cash.")))
-    assets = fy.get("total_assets_kwd", 0); debt = fy.get("interest_bearing_debt_kwd", 0)
-    if assets and debt / assets > 0.33:
-        flags.append(dict(rule="R2 conventional leverage", severity="MEDIUM",
-            finding=f"Interest-bearing debt is {debt/assets:.0%} of total assets.",
-            evidence=ev, recommendation="Propose refinancing of conventional debt via Murabaha / Sukuk programme at renewal."))
+            recommendation="Mandatory Taharah disgorgement (charitable disposal) to Bait Al-Zakat; refer to SCU per AAOIFI Standard No. 21."
+        ))
+
+    # 2. Conventional Debt / Leverage Ratio
+    assets = fy.get("total_assets_kwd") or fy.get("total_assets") or 0
+    debt = fy.get("interest_bearing_debt_kwd") or fy.get("total_debt") or 0
+    debt_ratio = (debt / assets) if (assets and debt) else 0.0
+    
+    if debt_ratio > 0.25:
+        flags.append(dict(
+            rule="R2 conventional leverage", severity="MEDIUM",
+            finding=f"Interest-bearing debt stands at {debt_ratio:.1%} of total assets (AAOIFI max ceiling 30.0%).",
+            evidence=ev,
+            recommendation="Propose Islamic refinancing of conventional debt via Murabaha / Sukuk facility at renewal."
+        ))
+
+    # 3. Screened Activities & Non-Compliant Investments
+    all_text = " ".join(getattr(c, "text", "") for c in chunks).lower() if chunks else ""
     for c in chunks:
-        low = c.text.lower()
+        low = getattr(c, "text", "").lower()
         hit = next((k for k in SCREENED if k in low), None)
         if hit:
-            flags.append(dict(rule="R3 screened activity", severity="HIGH",
-                finding=f"Screened activity keyword '{hit}' found in source {c.doc}.",
-                evidence=c.chunk_id,
-                recommendation="Quantify non-compliant revenue share; propose divestment or ring-fencing via SPV per Shariah Board guidance before facility approval."))
+            flags.append(dict(
+                rule="R3 screened activity", severity="HIGH",
+                finding=f"Screened activity/holding '{hit}' detected in document {getattr(c, 'doc', '')}.",
+                evidence=getattr(c, "chunk_id", "SRC-001"),
+                recommendation="Quantify non-compliant revenue/investment share; refer to SCU for divestment mandate."
+            ))
             break
-    score = max(0, 100 - sum(40 if f["severity"]=="HIGH" else 15 for f in flags))
+            
+    if "reinsurance" in all_text and not any(f["rule"] == "R3 screened activity" for f in flags):
+        flags.append(dict(
+            rule="R5 non-compliant equity holding", severity="MEDIUM",
+            finding="Un-purified equity stake in conventional reinsurance entity detected.",
+            evidence="SRC-002",
+            recommendation="SCU review required for equity holding divestment or dividend purification."
+        ))
+
+    deductions = sum(20 if f["severity"] == "HIGH" else 12 for f in flags)
+    score = max(0, 100 - deductions)
     return dict(flags=flags, score=score, threshold=II_THRESHOLD)
 
 def zakat_estimate(fin: dict):
