@@ -15,15 +15,20 @@ Base = declarative_base()
 
 def _engine():
     from pathlib import Path
-    url = os.environ["DATABASE_URL"]
-    ca = os.environ.get("SANAD_SSL_CA", "C:/Users/DELL-PC/Downloads/ca.pem")
-    if not Path(ca).exists():
-        raise SystemExit(f"✖ CA certificate not found at: {ca}  (set SANAD_SSL_CA in .env)")
+    url = os.environ.get("DATABASE_URL", "sqlite:///./sanad.db")
+    ca = os.environ.get("SANAD_SSL_CA", "ca.pem")
+    
+    connect_args = {}
+    if Path(ca).exists():
+        connect_args = {"ssl_ca": str(Path(ca).resolve()), "ssl_verify_cert": True}
+    elif "aivencloud.com" in url or "mysql" in url:
+        connect_args = {"ssl": {"ssl_mode": "REQUIRED"}}
+        
     return create_engine(
         url,
         pool_pre_ping=True,
         pool_recycle=1800,
-                connect_args={"ssl_ca": ca, "ssl_verify_cert": True},
+        connect_args=connect_args,
     )
 
 ENGINE = _engine()
