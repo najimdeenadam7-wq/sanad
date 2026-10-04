@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sanad — Access</title>
+<style>
+  body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f4f5; }
+  .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px; }
+  input { width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; }
+  button { width: 100%; padding: 10px; background: #111; color: white; border: none; cursor: pointer; margin-top: 10px; }
+  .toggle { text-align: center; margin-top: 15px; font-size: 0.9em; color: #555; cursor: pointer; text-decoration: underline; }
+  .error { color: red; font-size: 0.9em; margin-top: 10px; display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h2 id="title">Sign In</h2>
+  <div class="error" id="error"></div>
+  <form id="authForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit" id="submitBtn">Sign In</button>
+  </form>
+  <div class="toggle" id="toggleMode">Don't have an account? Sign Up</div>
+</div>
+
+<script>
+  const API_URL = 'http://localhost:8000';
+  let isLogin = true;
+  const form = document.getElementById('authForm');
+  const title = document.getElementById('title');
+  const btn = document.getElementById('submitBtn');
+  const toggle = document.getElementById('toggleMode');
+  const err = document.getElementById('error');
+
+  toggle.onclick = () => {
+    isLogin = !isLogin;
+    title.innerText = isLogin ? 'Sign In' : 'Sign Up';
+    btn.innerText = isLogin ? 'Sign In' : 'Sign Up';
+    toggle.innerText = isLogin ? "Don't have an account? Sign Up" : "Have an account? Sign In";
+    err.style.display = 'none';
+  };
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    err.style.display = 'none';
+    btn.disabled = true;
+    btn.innerText = 'Processing...';
+    
+    const endpoint = isLogin ? '/api/login' : '/api/register';
+    const payload = { email: document.getElementById('email').value, password: document.getElementById('password').value };
+
+    try {
+      const res = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Error');
+      
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      window.location.href = 'index.html';
+    } catch (e) {
+      err.innerText = e.message;
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.innerText = isLogin ? 'Sign In' : 'Sign Up';
+    }
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+sqlalchemy>=2.0
+pymysql>=1.1
+cryptography>=42.0      # for MySQL SSL
+bcrypt>=4.1
+pyjwt>=2.8
+google-cloud-vision>=3.7
+structlog>=24.1

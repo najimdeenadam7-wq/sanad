@@ -1,0 +1,68 @@
+================================================================================
+GULF PEARL FOODS TRADING W.L.L.
+INDEPENDENT AUDITOR'S REPORT & COMPLIANCE DOSSIER
+FISCAL YEAR ENDED DECEMBER 31, 2025
+================================================================================
+
+1. CORPORATE & REGULATORY PROFILE
+--------------------------------------------------------------------------------
+Client Name           : Gulf Pearl Foods Trading W.L.L.
+Commercial Registry   : CR 214457-2019 (Issued by MOCI Kuwait)
+Date of Registration  : 15-April-2019
+Registry Status       : Active & Valid until 15-April-2027
+Registered Capital    : KWD 500,000 Fully Paid
+Sector & Activity     : Import, Storage, and Wholesale Distribution of Halal Frozen Foods.
+Registered Address    : Shuwaikh Industrial Area 3, Block 2, Building 45, Kuwait City.
+Relationship Manager  : Fahad Al-Sabah (Warba Bank Corporate Banking Division)
+
+Shareholding Structure:
+- Fahad Al-Otaibi    : 55.0% (Managing Director & Authorized Signatory)
+- Khalid Al-Otaibi   : 30.0% (Director of Logistics)
+- Nasser Al-Otaibi   : 15.0% (Silent Partner)
+
+2. FINANCIAL PERFORMANCE & AUDITED STATEMENT SUMMARY
+--------------------------------------------------------------------------------
+Auditor Opinion       : Unqualified Clean Opinion issued by KPMG Al-Qatami & Partners.
+
+Key Financial Metrics (KWD):
+- Revenue 2024        : KWD 15,200,000
+- Revenue 2025        : KWD 18,400,000 (YoY Growth: +21.05%)
+- Gross Profit 2025   : KWD 4,452,800 (Gross Margin: 24.2%)
+- Net Income 2024     : KWD 1,050,000
+- Net Income 2025     : KWD 1,310,000 (Net Margin: 7.12%)
+- Total Assets        : KWD 10,800,000
+- Total Equity        : KWD 4,500,000
+- Total Debt          : KWD 2,100,000 (Conventional Working Capital Facility)
+- Cash & Bank Balances: KWD 1,420,000
+
+Note 9 (Receivables Reconciliation):
+Retention receivable of KWD 85,000 due from Kuwait Oil Company (KOC) pending technical closeout certification for cold storage catering milestone.
+
+3. FACILITY REQUEST & COLLATERAL STRUCTURE
+--------------------------------------------------------------------------------
+Facility Requested    : KWD 2,500,000 Working Capital Facility
+Structure             : Islamic Commodity Murabaha / Tawarruq
+Purpose               : Bulk procurement of frozen poultry and beef from certified South American suppliers.
+Pledged Collateral    : First-degree mortgage over Shuwaikh Cold Storage Facility (Appraised Value: KWD 3,200,000). Loan-to-Value (LTV): 78.1%.
+
+4. SHARIAH COMPLIANCE & TREASURY DISCLOSURE
+--------------------------------------------------------------------------------
+Core Operations Screen: The company confirms 100% of imported inventory consists of certified Halal food products. No involvement in alcohol, pork, gambling, tobacco, or non-permissible activities.
+
+Treasury Disclosures  :
+During FY 2025, the company maintained a short-term conventional deposit balance generating non-permissible interest income of KWD 14,200.
+Interest income represents 0.077% of gross annual revenue (strictly below the 5.0% AAOIFI ceiling under Standard No. 21).
+
+AAOIFI Purification Mandate (Taharah):
+The non-compliant interest income of KWD 14,200 must be fully purified by irrevocable donation to designated public welfare charities (Bait Al-Zakat Kuwait) prior to credit facility activation.
+
+Zakat Assessment (AAOIFI Standard No. 35):
+- Zakatable Assets (60% proxy of Total Assets): KWD 6,480,000
+- Less Short-Term Operating Liabilities       : KWD 1,000,000
+- Net Zakat Base                              : KWD 5,480,000
+- Obligatory Zakat Due @ 2.5%                 : KWD 137,000
+
+================================================================================
+Report Certified by: KPMG Al-Qatami & Partners (Kuwait)
+Dossier SHA-256 Hash: Verification Code Ready for Autonomous Ingestion
+================================================================================

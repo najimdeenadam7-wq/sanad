@@ -1,58 +1,66 @@
-"""Parses raw client files into structured, display-ready objects (no more raw JSON dumps)."""
+"""Parses whatever sources exist into display-ready structures (client-agnostic)."""
 import json, re
 from pathlib import Path
 
 DL = re.compile(r"^(\d{4}-\d{2}-\d{2})\s+(.*)$")
 
-def load(client_dir: Path, meta: dict) -> dict:
-    cr     = (client_dir/"cr_certificate.md").read_text()
-    fin    = json.loads((client_dir/"financials.json").read_text())
-    kyc    = json.loads((client_dir/"kyc_status.json").read_text())
-    crm    = (client_dir/"crm_notes.md").read_text()
-    emails = (client_dir/"emails.md").read_text()
-    news   = (client_dir/"news.md").read_text()
-    reg    = (client_dir/"registry.md").read_text()
-    required = json.loads((client_dir.parent/"required_docs.json").read_text())
+def _read(p): return p.read_text(encoding="utf-8") if p.exists() else ""
 
-    def grab(pattern, text, default="—"):
-        m = re.search(pattern, text)
+def load(client_dir: Path, meta: dict) -> dict:
+    cr     = _read(client_dir/"cr_certificate.md")
+    crm    = _read(client_dir/"crm_notes.md")
+    emails = _read(client_dir/"emails.md")
+    news   = _read(client_dir/"news.md")
+    reg    = _read(client_dir/"registry.md")
+    fin    = json.loads(_read(client_dir/"financials.json") or "{}")
+    kyc    = json.loads(_read(client_dir/"kyc_status.json") or "{}")
+    req_p  = client_dir.parent/"required_docs.json"
+    required = json.loads(req_p.read_text(encoding="utf-8")) if req_p.exists() else []
+    up_int = "\n".join(p.read_text(encoding="utf-8") for p in sorted(client_dir.glob("int_up_*.md")))
+    up_ext = "\n".join(p.read_text(encoding="utf-8") for p in sorted(client_dir.glob("ext_up_*.md")))
+    int_text = crm + "\n" + emails + "\n" + up_int
+    ext_text = news + "\n" + up_ext
+    combined = "\n".join(t for t in (cr, int_text, ext_text, reg) if t)
+
+    def grab(pattern, default="—"):
+        m = re.search(pattern, combined)
         return m.group(1).strip() if m else default
 
-    profile = {
-        "Client": meta["name"], "Sector": meta["sector"],
-        "CR No.": grab(r"CR No\.:\s*([^\s|]+)", cr),
-        "Activity": grab(r"Activity:\s*([^|\n]+)", cr),
-        "Registered Capital": grab(r"Registered capital:\s*([^|\n]+)", cr),
-        "Signatories": grab(r"Signatories:\s*([^\n]+)", cr),
-        "Valid Until": grab(r"Valid until:\s*([^\n]+)", cr),
-        "Registry Status": grab(r"status\s+(\w+)", reg),
-    }
+    profile = {"Client": meta.get("name", client_dir.name), "Sector": meta.get("sector", "—")}
+    if meta.get("cr"): profile["CR No."] = meta["cr"]
+    for key, pat in [("CR No.", r"CR No\.:\s*([^\s|]+)"), ("Activity", r"Activity:\s*([^\n|]+)"),
+        ("Registered Capital", r"Registered capital:\s*([^|\n]+)"),
+        ("Signatories", r"Signatories:\s*([^\n]+)"), ("Valid Until", r"Valid until:\s*([^\n]+)"),
+        ("Registry Status", r"status\s+(\w+)"), ("Relationship Manager", r"RM:\s*(.+)")]:
+        v = grab(pat)
+        if v != "—": profile[key] = v
+
+    def tag(line):
+        if line in crm: return "CRM"
+        if line in emails: return "Email"
+        return "Upload"
     timeline = []
-    for line in crm.splitlines():
-        line = line.strip()
-        m = DL.match(line)
-        if m: timeline.append((m.group(1), "CRM", m.group(2)))
-        rm = re.match(r"RM:\s*(.+)", line)
-        if rm: profile["Relationship Manager"] = rm.group(1)
-    for line in emails.splitlines():
+    for line in int_text.splitlines():
         m = DL.match(line.strip())
-        if m: timeline.append((m.group(1), "Email", m.group(2)))
+        if m: timeline.append((m.group(1), tag(line.strip()), m.group(2)))
     timeline.sort()
 
     shareholders = []
-    m = re.search(r"Shareholders:\s*(.+)", reg)
+    m = re.search(r"Shareholders:\s*(.+)", combined)
     if m:
         for part in m.group(1).split(","):
             pm = re.match(r"\s*(.+?)\s+(\d+)%", part)
             if pm: shareholders.append((pm.group(1), f"{pm.group(2)}%"))
     # Only POSITIVE encumbrances warn; "No registered liens…" is a clean signal, not a warning.
-    registry_notes = [l.strip() for l in reg.splitlines()
+    registry_notes = [l.strip() for l in combined.splitlines()
                       if re.search(r"mortgage|lien", l, re.I) and not l.strip().lower().startswith("no ")]
 
-    news_items = [(m.group(1), m.group(2)) for l in news.splitlines() if (m := DL.match(l.strip()))]
+    news_items = [(m.group(1), m.group(2)) for l in ext_text.splitlines() if (m := DL.match(l.strip()))]
 
-    present, expired = set(kyc.get("present", [])), set(kyc.get("expired", []))
-    docs = [(d, "EXPIRED" if d in expired else ("PRESENT" if d in present else "MISSING")) for d in required]
+    docs = None
+    if kyc:
+        present, expired = set(kyc.get("present", [])), set(kyc.get("expired", []))
+        docs = [(d, "EXPIRED" if d in expired else ("PRESENT" if d in present else "MISSING")) for d in required]
 
     f25, f24 = fin.get("fy2025", {}), fin.get("fy2024", {})
     metrics = [
@@ -63,7 +71,7 @@ def load(client_dir: Path, meta: dict) -> dict:
         ("Interest-bearing Debt (KWD)", None, f25.get("interest_bearing_debt_kwd")),
         ("Gross Margin (%)",         None, f25.get("gross_margin_pct")),
         ("Interest Income (%)",      None, f25.get("interest_income_pct")),
-    ]
+    ] if f25 else []
     return dict(profile=profile, timeline=timeline, shareholders=shareholders,
                 registry_notes=registry_notes, news=news_items, docs=docs,
-                metrics=metrics, fin=fin)
+                metrics=metrics, fin=fin, kyc=kyc, required=required)

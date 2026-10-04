@@ -8,16 +8,18 @@ import os, re, urllib.request
 CIT = re.compile(r"\[(SRC-\d+#c\d+)\]")
 
 SECTIONS = [
- ("overview","1. Client Overview & Relationship History",
-   ["company registration capital signatories","relationship history meetings RM","shareholders registry liens"]),
- ("financials","2. Financial Performance & Position",
-   ["revenue net income margin audited","total assets equity interest bearing debt","gross margin auditor opinion"]),
- ("risk","3. Risk Factors & Mitigants",
-   ["utilisation overdue conduct","news market prices volatility","mortgage liens collateral"]),
- ("shariah","4. Shariah Compliance Screen",
-   ["interest income conventional deposit","insurance stake screened activity","debt assets conventional bank"]),
- ("recommendation","5. Facility Recommendation & Next Steps",
-   ["facility limit increase renewal request","missing documents board resolution UBO","tender contract expansion next steps"]),
+ ("exec_summary", "1. Executive Summary & Facility Request",
+   ["facility limit increase renewal request", "client overview business activity", "proposed financing structure"]),
+ ("background_ubo", "2. Borrower Background, Governance & UBO Structure",
+   ["company registration capital signatories", "shareholders registry liens UBO beneficial", "relationship history meetings RM"]),
+ ("financial_cashflow", "3. Financial & Cash-Flow Analysis (DSCR & Stress-Testing)",
+   ["revenue net income margin audited", "total assets equity interest bearing debt", "ebitda debt service coverage ratio cash flow"]),
+ ("shariah_governance", "4. Shariah Compliance, Purification & Islamic Structuring",
+   ["interest income conventional deposit purification", "insurance stake screened activity", "murabaha tawarruq ijarah restructuring"]),
+ ("collateral_risks", "5. Collateral, Security & Risk Mitigation (LTV & Discrepancies)",
+   ["mortgage liens collateral security ltv", "news market prices volatility conduct", "discrepancy reconciliation"]),
+ ("recommendation_covenants", "6. Committee Recommendation & Proposed Covenants",
+   ["recommendation approval conditions", "debt service reserve account covenant dscr", "covenants compliance monitoring next steps"]),
 ]
 
 def _snippet(c, n=280):
@@ -26,10 +28,28 @@ def _snippet(c, n=280):
 def _prompt(client, title, picked):
     body = "\n".join(f"{c.chunk_id}: {c.text}" for c in picked)
     return (f"You are a senior corporate credit analyst at Warba Bank (Islamic bank, Kuwait).\n"
-            f"Write section '{title}' of a credit memo for client {client['name']}.\n"
+            f"Write section '{title}' of a credit memo for client {client.get('name', 'Corporate Client')}.\n"
             f"Use ONLY the chunks below. Cite EVERY claim with its chunk id in square brackets, e.g. [SRC-002#c0].\n"
             f"Max 180 words. Banker prose or bullets. State uncertainty explicitly; never invent figures.\n"
             f"CHUNKS:\n{body}")
+
+def _gemini(prompt):
+    key = os.environ.get("LLM_API_KEY")
+    if not key or os.environ.get("LLM_PROVIDER", "gemini").lower() != "gemini":
+        return None
+    model = os.environ.get("LLM_MODEL", "gemini-flash-latest")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
+    req_data = _json.dumps({
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.1}
+    }).encode("utf-8")
+    try:
+        req = urllib.request.Request(url, data=req_data, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            out = _json.loads(resp.read().decode())
+            return out["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception:
+        return None
 
 def _anthropic(prompt):
     key = os.environ.get("ANTHROPIC_API_KEY")
@@ -89,7 +109,7 @@ def assemble(client, chunks, bm, use_llm=True):
         text = None
         if use_llm:
             p = _prompt(client, title, picked)
-            text = _anthropic(p) or _openai_compat(p)
+            text = _gemini(p) or _anthropic(p) or _openai_compat(p)
         if text: llm_used += 1
         else:
             fallbacks += 1

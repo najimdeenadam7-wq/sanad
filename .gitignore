@@ -1,6 +1,10 @@
 __pycache__/
 *.pyc
-.streamlit/secrets.toml
+venv/
+uploads/
+.env
 data/audit.log
 data/*/shariah_review.json
 _eval_audit.log
+.streamlit/secrets.toml
+.streamlit/

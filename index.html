@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanad — AI Client File Engine · Warba Bank · Track 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root{
+    --canvas:#FBFBFA; --surface:#FFFFFF; --surface-2:#F7F6F3;
+    --ink:#111111; --ink-2:#2F3437; --muted:#787774;
+    --line:#EAEAEA;
+    --red-bg:#FDEBEC; --red-tx:#9F2F2D;
+    --blue-bg:#E1F3FE; --blue-tx:#1F6C9F;
+    --green-bg:#EDF3EC; --green-tx:#346538;
+    --yellow-bg:#FBF3DB; --yellow-tx:#956400;
+    --sans:'Helvetica Neue',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+    --serif:'Newsreader','Lyon Text',Georgia,serif;
+    --mono:'JetBrains Mono','SF Mono',Menlo,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--canvas);color:var(--ink-2);font-family:var(--sans);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--ink);color:#fff}
+
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(251,251,250,.9);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .topbar-in{max-width:1120px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-mark{width:34px;height:34px;background:var(--ink);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;font-weight:600}
+  .brand-name{font-family:var(--serif);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--ink)}
+  .brand-sub{font-size:12px;color:var(--muted);margin-top:-2px}
+  .top-actions{display:flex;align-items:center;gap:12px}
+  .env-pill{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;background:var(--yellow-bg);color:var(--yellow-tx);border-radius:9999px;padding:5px 12px;white-space:nowrap}
+  .btn{background:var(--ink);color:#fff;border:none;border-radius:6px;padding:10px 20px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+  .btn:hover{background:#333}
+  .btn:active{transform:scale(.98)}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{background:var(--surface-2)}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+
+  .file-head{padding:64px 0 8px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--green-tx)}
+  h1{font-family:var(--serif);font-size:46px;font-weight:500;letter-spacing:-0.03em;line-height:1.1;color:var(--ink);margin:14px 0 10px;max-width:16ch}
+  .lede{font-size:17px;color:var(--muted);max-width:62ch}
+  .lede strong{color:var(--ink-2);font-weight:500}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+  .meta-chip{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 12px}
+  .meta-chip b{color:var(--ink);font-weight:500}
+
+  .control{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 24px;margin:32px 0;display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+  .control .field{display:flex;flex-direction:column;gap:4px}
+  .control label{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .control select,.control input{font-family:var(--sans);font-size:14px;border:1px solid var(--line);border-radius:6px;padding:9px 12px;background:var(--canvas);color:var(--ink);min-width:220px}
+  .assembled{font-size:13px;color:var(--green-tx);background:var(--green-bg);border-radius:6px;padding:8px 14px;font-family:var(--mono)}
+
+  .section-label{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:56px 0 16px;display:flex;align-items:center;gap:8px}
+  .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px;transition:box-shadow 200ms ease}
+  .card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+  .metric{grid-column:span 2}
+  .metric.hero{grid-column:span 2;background:var(--ink);border-color:var(--ink);color:#fff}
+  .metric.hero .m-label{color:#B9B9B6}
+  .metric.hero .m-value{color:#fff}
+  .m-label{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .m-value{font-family:var(--serif);font-size:42px;font-weight:500;letter-spacing:-0.02em;line-height:1.1;color:var(--ink)}
+  .m-value small{font-size:20px;color:var(--muted);font-weight:400}
+  .m-note{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;border-radius:9999px;padding:3px 10px;margin-top:10px}
+  .tag.green{background:var(--green-bg);color:var(--green-tx)}
+  .tag.red{background:var(--red-bg);color:var(--red-tx)}
+  .tag.blue{background:var(--blue-bg);color:var(--blue-tx)}
+  .tag.yellow{background:var(--yellow-bg);color:var(--yellow-tx)}
+  .score-bar{height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin-top:14px;overflow:hidden}
+  .score-bar i{display:block;height:100%;width:60%;background:#fff;border-radius:2px}
+
+  .tabs{position:sticky;top:63px;z-index:40;background:rgba(251,251,250,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin:48px -32px 0;padding:0 32px}
+  .tabs-in{max-width:1120px;margin:0 auto;display:flex;gap:4px;overflow-x:auto}
+  .tab{border:none;background:none;font-family:var(--sans);font-size:13.5px;font-weight:500;color:var(--muted);padding:14px 14px 12px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+  .tab i{font-size:15px}
+  .tab:hover{color:var(--ink)}
+  .tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+
+  .panel{display:none;padding:40px 0 8px}
+  .panel.active{display:block;animation:fadeUp 500ms cubic-bezier(0.16,1,0.3,1)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .card h2{font-family:var(--serif);font-size:24px;font-weight:500;letter-spacing:-0.02em;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+  .card h2 i{font-size:22px}
+  .card .sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+  .span-2{grid-column:span 2}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:500}
+  td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  td.mono{font-family:var(--mono);font-size:12.5px}
+  .cite{font-family:var(--mono);font-size:11px;color:var(--green-tx);background:var(--green-bg);border-radius:4px;padding:1px 6px;white-space:nowrap}
+
+  .status{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500}
+  .status .d{width:8px;height:8px;border-radius:50%}
+  .status.ok .d{background:var(--green-tx)} .status.ok{color:var(--green-tx)}
+  .status.bad .d{background:var(--red-tx)} .status.bad{color:var(--red-tx)}
+
+  .callout{border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:8px;background:var(--surface-2);padding:16px 20px;font-size:14px;margin-top:16px}
+  .callout.blue{border-left-color:var(--blue-tx)}
+  .callout .who{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+
+  .email{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:20px 22px;font-family:var(--mono);font-size:12.5px;line-height:1.7;white-space:pre-wrap;margin-top:12px}
+  kbd{border:1px solid var(--line);border-radius:4px;background:var(--surface-2);font-family:var(--mono);font-size:12px;padding:1px 7px}
+
+  .check-row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .check-row:last-child{border-bottom:none}
+  .checkbox{width:18px;height:18px;border:1px solid var(--line);border-radius:4px;background:var(--surface);flex-shrink:0;margin-top:3px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:var(--green-tx)}
+  .checkbox.on{background:var(--green-bg);border-color:var(--green-tx)}
+
+  .arabic{direction:rtl;text-align:right;font-size:16px}
+  .arabic h2{font-size:26px}
+
+  footer{border-top:1px solid var(--line);margin-top:72px;padding:28px 0 56px}
+  .foot-in{display:flex;justify-content:space-between;gap:16px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+  .reveal{opacity:0;transform:translateY(16px);filter:blur(6px);transition:opacity 700ms cubic-bezier(0.16,1,0.3,1),transform 700ms cubic-bezier(0.16,1,0.3,1),filter 700ms cubic-bezier(0.16,1,0.3,1)}
+  .reveal.in{opacity:1;transform:none;filter:blur(0)}
+  .file-head>*{opacity:0;transform:translateY(16px);filter:blur(6px);transition:opacity 700ms cubic-bezier(0.16,1,0.3,1),transform 700ms cubic-bezier(0.16,1,0.3,1),filter 700ms cubic-bezier(0.16,1,0.3,1)}
+  .file-head.in>*{opacity:1;transform:none;filter:blur(0)}
+  .file-head.in>*:nth-child(1){transition-delay:.05s}
+  .file-head.in>*:nth-child(2){transition-delay:.16s}
+  .file-head.in>*:nth-child(3){transition-delay:.27s}
+  .file-head.in>*:nth-child(4){transition-delay:.38s}
+  .ambient{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(720px 420px at 50% -8%,rgba(176,148,88,.05),transparent 65%);animation:drift 26s ease-in-out infinite alternate}
+  @keyframes drift{from{transform:translateX(-4%)}to{transform:translateX(4%)}}
+  .wrap{position:relative;z-index:1}
+  .progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:80}
+  .progress i{display:block;height:100%;background:var(--yellow-tx);opacity:.7;transform:scaleX(0);transform-origin:0 50%}
+  .kicker .dot{animation:pulse 2.6s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,101,56,.35)}70%{box-shadow:0 0 0 8px rgba(52,101,56,0)}100%{box-shadow:0 0 0 0 rgba(52,101,56,0)}}
+  .card{transition:box-shadow 250ms cubic-bezier(0.16,1,0.3,1),transform 250ms cubic-bezier(0.16,1,0.3,1),border-color 250ms}
+  .card:hover{box-shadow:0 3px 14px rgba(0,0,0,0.045);transform:translateY(-2px);border-color:#DEDEDA}
+  .btn{transition:background 250ms,transform 150ms cubic-bezier(0.32,0.72,0,1)}
+  .btn i{transition:transform 300ms cubic-bezier(0.32,0.72,0,1)}
+  .btn:hover i{transform:translateX(2px)}
+  .btn:active{transform:scale(.97)}
+  .btn:disabled{opacity:.55;cursor:wait}
+  .working{animation:work 1s ease-in-out infinite;pointer-events:none}
+  @keyframes work{0%,100%{opacity:1}50%{opacity:.55}}
+  .tab{transition:color 250ms,border-color 300ms cubic-bezier(0.16,1,0.3,1)}
+  .score-bar i{width:0;transition:width 1.3s cubic-bezier(0.16,1,0.3,1) .35s}
+  .reveal.in .score-bar i{width:60%}
+  .cite{transition:background 200ms,color 200ms}
+  .cite:hover{background:var(--ink);color:#fff}
+  tbody tr{transition:background 200ms}
+  tbody tr:hover{background:var(--surface-2)}
+  [data-count]{font-variant-numeric:tabular-nums}
+  @keyframes flash{0%{box-shadow:0 0 0 0 rgba(52,101,56,.35)}100%{box-shadow:0 0 0 14px rgba(52,101,56,0)}}
+  .flash{animation:flash .8s ease-out 2}
+  .checkbox{transition:border-color 200ms,background 200ms}
+  .checkbox[data-tick]{cursor:pointer}
+  .checkbox[data-tick]:hover{border-color:var(--ink)}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translate(-50%,16px);z-index:90;background:var(--ink);color:#fff;font-size:13.5px;border-radius:8px;padding:11px 20px;opacity:0;pointer-events:none;transition:opacity 350ms cubic-bezier(0.16,1,0.3,1),transform 350ms cubic-bezier(0.16,1,0.3,1)}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+    .reveal,.file-head>*{opacity:1!important;transform:none!important;filter:none!important}
+    html{scroll-behavior:auto}
+  }
+  @media(max-width:900px){
+    h1{font-size:34px}
+    .bento{grid-template-columns:1fr 1fr}
+    .metric,.metric.hero{grid-column:span 1}
+    .grid-2,.grid-3{grid-template-columns:1fr}
+    .span-2{grid-column:span 1}
+    .tabs{margin:32px -20px 0;padding:0 20px}
+    .wrap{padding:0 20px}
+    .topbar-in{padding:12px 20px}
+  }
+</style>
+</head>
+<body>
+<div class="ambient" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><i id="progressFill"></i></div>
+<div class="toast" id="toast" role="status"></div>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="brand-mark">س</div>
+      <div>
+        <div class="brand-name">Sanad</div>
+        <div class="brand-sub">AI Client File Engine · Warba Bank · Track 1</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="env-pill">v3.7 · Live engine · Citation-First · Shariah-Compliant</span>
+      <button class="btn-ghost btn" onclick="document.getElementById('assemble').scrollIntoView({behavior:'smooth'})"><i class="ph-bold ph-lightning"></i>Assemble</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="file-head reveal">
+    <div class="kicker"><span class="dot"></span>Client file · loading…</div>
+    <h1>—</h1>
+    <p class="lede">—</p>
+    <div class="meta-row"></div>
+  </section>
+
+  <section class="control reveal" id="assemble">
+    <div class="field">
+      <label>Client</label>
+      <select id="clientSelect"></select>
+    </div>
+    <div class="field">
+      <label>Uploads treated as</label>
+      <select id="kindSelect"><option>Internal</option><option>External</option></select>
+    </div>
+    <div class="field">
+      <label>Sources</label>
+      <input type="file" id="fileInput" multiple accept=".pdf,.docx,.csv,.txt,.md,.json">
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex:1;justify-content:flex-end;flex-wrap:wrap">
+      <span class="assembled" id="assembleStatus">Assembling…</span>
+      <button class="btn btn-ghost" id="rmUp" type="button"><i class="ph-bold ph-trash"></i>Remove uploads</button>
+      <button class="btn" id="assembleBtn" type="button"><i class="ph-bold ph-lightning"></i>Assemble / Refresh Client File</button>
+    </div>
+  </section>
+
+  <div class="section-label">File at a glance</div>
+  <section class="bento">
+    <div class="card metric hero reveal">
+      <div class="m-label">Shariah Score</div>
+      <div class="m-value"><span data-count="0">0</span><small>/100</small></div>
+      <div class="score-bar"><i></i></div>
+      <span class="tag" id="scoreTag" style="background:rgba(255,255,255,.14);color:#fff">—</span>
+    </div>
+    <div class="card metric reveal">
+      <div class="m-label">Open Gaps</div>
+      <div class="m-value"><span data-count="0">0</span></div>
+      <div class="m-note" id="gapsNote">—</div>
+    </div>
+    <div class="card metric reveal">
+      <div class="m-label">Assembly Time</div>
+      <div class="m-value"><span data-count="0" data-dec="2">0</span><small>s</small></div>
+      <div class="m-note" id="elapsedNote">Manual baseline 20.0h</div>
+    </div>
+    <div class="card metric reveal">
+      <div class="m-label">Hours Returned</div>
+      <div class="m-value"><span data-count="0" data-dec="1">0</span><small>h</small></div>
+      <div class="m-note">Annualised · 40 deals</div>
+    </div>
+    <div class="card metric reveal">
+      <div class="m-label">Citations</div>
+      <div class="m-value"><span data-count="0">0</span></div>
+      <div class="m-note">Every claim carries a receipt</div>
+    </div>
+  </section>
+
+  <nav class="tabs"><div class="tabs-in" id="tabs">
+    <button class="tab active" data-p="credit"><i class="ph-bold ph-file-text"></i>Credit File</button>
+    <button class="tab" data-p="financials"><i class="ph-bold ph-chart-line-up"></i>Financials</button>
+    <button class="tab" data-p="shariah"><i class="ph-bold ph-scales"></i>Shariah &amp; Restructuring</button>
+    <button class="tab" data-p="zakat"><i class="ph-bold ph-coins"></i>Zakat</button>
+    <button class="tab" data-p="gaps"><i class="ph-bold ph-envelope-open"></i>Gaps &amp; Outreach</button>
+    <button class="tab" data-p="rm"><i class="ph-bold ph-briefcase"></i>RM Briefing</button>
+    <button class="tab" data-p="ar"><i class="ph-bold ph-globe"></i>ملخص عربي</button>
+    <button class="tab" data-p="impact"><i class="ph-bold ph-gauge"></i>Impact</button>
+    <button class="tab" data-p="approve"><i class="ph-bold ph-check-square"></i>Approve &amp; Export</button>
+  </div></nav>
+
+  <!-- CREDIT -->
+  <section class="panel active" id="p-credit">
+    <div class="grid-2">
+      <div class="card reveal">
+        <h2><i class="ph-bold ph-identification-card"></i>Client Profile</h2>
+        <div class="sub">Registry extract · live engine</div>
+        <table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card reveal">
+        <h2><i class="ph-bold ph-clock-counter-clockwise"></i>Relationship Timeline</h2>
+        <div class="sub">CRM + email · newest last</div>
+        <table><thead><tr><th>Date</th><th>Source</th><th>Event</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card reveal">
+        <h2><i class="ph-bold ph-users-three"></i>Shareholders</h2>
+        <div class="sub">Registry extract</div>
+        <table><thead><tr><th>Party</th><th class="num">Stake</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card reveal">
+        <h2><i class="ph-bold ph-newspaper"></i>External News Signals</h2>
+        <div class="sub">Desaturated, verified</div>
+        <table><thead><tr><th>Date</th><th>Headline</th></tr></thead><tbody></tbody></table>
+        <div class="callout"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINANCIALS -->
+  <section class="panel" id="p-financials">
+    <div class="bento" style="margin-bottom:16px">
+      <div class="card metric reveal"><div class="m-label">Revenue FY25</div><div class="m-value" style="font-size:32px"><span data-count="0" data-comma="1">0</span></div><span class="tag" id="revTag">—</span></div>
+      <div class="card metric reveal"><div class="m-label">Net Income FY25</div><div class="m-value" style="font-size:32px"><span data-count="0" data-comma="1">0</span></div><span class="tag" id="niTag">—</span></div>
+      <div class="card metric reveal"><div class="m-label">Gross Margin</div><div class="m-value" style="font-size:32px"><span data-count="0" data-dec="1">0</span>%</div><div class="m-note">Auditor clean opinion</div></div>
+      <div class="card metric reveal"><div class="m-label">Total Assets</div><div class="m-value" style="font-size:32px"><span data-count="0" data-comma="1">0</span></div></div>
+      <div class="card metric reveal"><div class="m-label">Total Equity</div><div class="m-value" style="font-size:32px"><span data-count="0" data-comma="1">0</span></div></div>
+      <div class="card metric reveal"><div class="m-label">Interest-bearing Debt</div><div class="m-value" style="font-size:32px"><span data-count="0" data-comma="1">0</span></div><span class="tag" id="debtTag">—</span></div>
+    </div>
+    <div class="card reveal">
+      <h2><i class="ph-bold ph-table"></i>Year-over-Year Comparison</h2>
+      <div class="sub">Audited FY2024 → FY2025 · KWD</div>
+      <table><thead><tr><th>Metric</th><th class="num">FY2024</th><th class="num">FY2025</th><th class="num">Change</th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <!-- SHARIAH -->
+  <section class="panel" id="p-shariah">
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card reveal" style="background:var(--ink);border-color:var(--ink);color:#fff">
+        <div class="m-label" style="color:#B9B9B6">Compliance Score</div>
+        <div class="m-value" style="color:#fff"><span data-count="0">0</span><small style="color:#B9B9B6">/100</small></div>
+        <div class="score-bar"><i></i></div>
+        <div class="m-note" id="shariahNote" style="color:#B9B9B6">—</div>
+      </div>
+      <div class="card reveal">
+        <h2><i class="ph-bold ph-flag"></i>Screening Result</h2>
+        <div class="sub">AAOIFI rules engine · evidence-linked</div>
+        <table><thead><tr><th>Severity</th><th>Rule</th><th>Finding</th><th>Evidence</th></tr></thead><tbody></tbody></table>
+        <div class="callout blue" id="shariahRec"><span class="who">Recommendation</span>—</div>
+      </div>
+    </div>
+    <div class="card reveal">
+      <h2><i class="ph-bold ph-arrows-left-right"></i>Conventional → Islamic Restructuring Map</h2>
+      <div class="sub">Turns a "no" into a pitch the RM can walk in with</div>
+      <table>
+        <thead><tr><th>Conventional Exposure</th><th>Shariah Issue</th><th>Proposed Islamic Structure</th><th>Mechanism</th><th>Reference</th></tr></thead>
+        <tbody id="restructureBody">
+          <tr><td>Interest-bearing term debt</td><td>Riba (interest accrual)</td><td>Murabaha / Sukuk programme</td><td>Asset-backed cost-plus sale / investment certificate</td><td class="mono">AAOIFI SS 8 / SS 17</td></tr>
+          <tr><td>Interest income on idle cash</td><td>Riba income</td><td>Purification + Islamic deposit</td><td>Charitable disposal of interest; migrate cash to Wakala deposit</td><td class="mono">AAOIFI Wakala standard</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card reveal" style="margin-top:16px">
+      <h2><i class="ph-bold ph-clipboard-text"></i>Shariah Control Unit review queue</h2>
+      <div class="sub">SCU decision is recorded to the audit trail</div>
+      <div id="scuQueue" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <span class="m-note">Loading…</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ZAKAT -->
+  <section class="panel" id="p-zakat">
+    <div class="card reveal">
+      <h2><i class="ph-bold ph-coins"></i>Zakat Computation</h2>
+      <div class="sub">Simplified net-invested-funds proxy · 60% zakatable assets · final basis subject to SCU methodology</div>
+      <table><thead><tr><th>Step</th><th>Item</th><th class="num">Amount (KWD)</th></tr></thead><tbody></tbody></table>
+      <div class="callout"><span class="who">RM talking point</span>Offer Zakat settlement via Warba's charity channels → purification of doubtful income.</div>
+    </div>
+  </section>
+
+  <!-- GAPS -->
+  <section class="panel" id="p-gaps">
+    <div class="card reveal">
+      <h2><i class="ph-bold ph-folder-open"></i>Document Gaps</h2>
+      <div class="sub">Required vs. present</div>
+      <table><thead><tr><th>Required Document</th><th>Status</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="card reveal" style="margin-top:16px">
+      <h2><i class="ph-bold ph-envelope-simple-open"></i>Auto-drafted outreach email</h2>
+      <div class="sub">Ready to send</div>
+      <div class="email" id="gapsEmail">—</div>
+    </div>
+  </section>
+
+  <!-- RM BRIEFING -->
+  <section class="panel" id="p-rm">
+    <div class="grid-2">
+      <div class="card reveal">
+        <h2><i class="ph-bold ph-device-mobile"></i>Hallway Brief</h2>
+        <div class="sub">280 characters · read on the way in</div>
+        <div class="callout"><span class="who">Copy-ready text</span><span id="briefCallout">—</span></div>
+      </div>
+      <div class="card reveal">
+        <h2><i class="ph-bold ph-copy"></i>Copy-ready text</h2>
+        <div class="sub">Paste into WhatsApp or email</div>
+        <div class="email" id="briefEmail">—</div>
+        <button class="btn btn-ghost" id="copyBtn" style="margin-top:12px" type="button">Copy text</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARABIC -->
+  <section class="panel" id="p-ar">
+    <div class="card reveal arabic">
+      <h2>الملخص التنفيذي بالعربية</h2>
+      <div class="sub">موجز الإدارة · مرتجعات الشواهد</div>
+      <div class="callout" style="border-left:none;border-right:3px solid var(--ink);text-align:right">
+        <span class="who">العميل</span>
+        <span id="arBody">—</span>
+      </div>
+      <div class="sub" style="margin-top:12px">Pilot phase: full Arabic memo prose via Warba-approved private LLM endpoint.</div>
+    </div>
+  </section>
+
+  <!-- IMPACT -->
+  <section class="panel" id="p-impact">
+    <div class="card reveal">
+      <h2><i class="ph-bold ph-gauge"></i>Manual vs. Sanad</h2>
+      <div class="sub">20.0h baseline · measured, not estimated</div>
+      <table>
+        <thead><tr><th>Workflow Step</th><th class="num">Manual (hours)</th><th class="num">Sanad (seconds)</th></tr></thead>
+        <tbody>
+          <tr><td>Source gathering</td><td class="num">4.0</td><td class="num">1.2</td></tr>
+          <tr><td>Financial analysis</td><td class="num">6.0</td><td class="num">0.8</td></tr>
+          <tr><td>Memo drafting</td><td class="num">7.0</td><td class="num">1.5</td></tr>
+          <tr><td>Shariah &amp; compliance check</td><td class="num">2.5</td><td class="num">0.5</td></tr>
+          <tr><td>Gap follow-up emails</td><td class="num">0.5</td><td class="num">0.2</td></tr>
+          <tr><td><strong>Total</strong></td><td class="num"><strong>20.0</strong></td><td class="num" id="impactTotal">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid-2" style="margin-top:16px">
+      <div class="card metric reveal"><div class="m-label">Hours returned per deal</div><div class="m-value"><span data-count="0" data-dec="1">0</span></div></div>
+      <div class="card metric reveal"><div class="m-label">Annualised (40 deals / RM)</div><div class="m-value"><span data-count="0" data-comma="1">0</span><small>h</small></div></div>
+    </div>
+  </section>
+
+  <!-- APPROVE -->
+  <section class="panel" id="p-approve">
+    <div class="card reveal">
+      <h2><i class="ph-bold ph-check-square"></i>Approval chain</h2>
+      <div class="sub">Every tick is written to the audit trail</div>
+      <div class="check-row"><span class="checkbox on" data-tick data-role="rm">✓</span><div><strong>RM approval</strong><br><span style="color:var(--muted);font-size:13px">memo sections reviewed</span></div></div>
+      <div class="check-row"><span class="checkbox" data-tick data-role="credit"></span><div><strong>Credit approval</strong><br><span style="color:var(--muted);font-size:13px">pending SCU clearance on flags (if any)</span></div></div>
+      <div class="check-row"><span class="checkbox" data-tick data-role="scu"></span><div><strong>SCU approval</strong><br><span style="color:var(--muted);font-size:13px">Shariah Control Unit sign-off</span></div></div>
+      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+        <button class="btn" id="dlBtn" type="button"><i class="ph-bold ph-download"></i>Download memo (.md)</button>
+        <button class="btn btn-ghost" id="auditBtn" type="button"><i class="ph-bold ph-clock"></i>Show audit trail</button>
+      </div>
+      <pre id="auditLog" style="display:none;margin-top:16px;padding:14px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:11.5px;line-height:1.6;max-height:260px;overflow:auto"></pre>
+    </div>
+  </section>
+
+  <footer><div class="foot-in">
+    <span>Sanad v3.7 — built for the Warba Bank Corporate Banking AI Challenge 2026</span>
+    <span>Synthetic data only · Demo environment</span>
+  </div></footer>
+
+</div>
+
+<script>
+(function(){
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+  let toastH;
+  function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastH);toastH=setTimeout(()=>t.classList.remove('show'),2600)}
+
+  function fmt(v,dec,comma){return comma?Number(v).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec}):Number(v).toFixed(dec)}
+  function countUp(el){
+    if(el._done)return;el._done=true;
+    const end=parseFloat(el.dataset.count),dec=parseInt(el.dataset.dec||'0',10),comma=el.hasAttribute('data-comma');
+    if(reduce){el.textContent=fmt(end,dec,comma);return}
+    const t0=performance.now(),dur=1400;
+    (function f(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,4);
+      el.textContent=fmt(end*e,dec,comma);if(p<1)requestAnimationFrame(f)})(t0);
+  }
+  function runCounts(scope){scope.querySelectorAll('[data-count]').forEach(countUp)}
+
+  const io=('IntersectionObserver' in window)?new IntersectionObserver(es=>es.forEach(e=>{
+    if(!e.isIntersecting)return;e.target.classList.add('in');io.unobserve(e.target);runCounts(e.target);
+  }),{threshold:.1}):null;
+  $$('.reveal').forEach((el,i)=>{
+    el.style.transitionDelay=((i%6)*50)+'ms';
+    if(io)io.observe(el);else{el.classList.add('in');runCounts(el)}
+  });
+
+  const tabs=$$('.tab');
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    if(t.classList.contains('active'))return;
+    tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');
+    $$('.panel').forEach(p=>p.classList.remove('active'));
+    const panel=document.getElementById('p-'+t.dataset.p);
+    panel.classList.add('active');
+    panel.querySelectorAll('.card').forEach((c,i)=>{
+      c.classList.remove('in');c.style.transitionDelay=(i*70)+'ms';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{c.classList.add('in')}));
+    });
+    runCounts(panel);
+    window.scrollTo({top:document.querySelector('.tabs').offsetTop-70,behavior:reduce?'auto':'smooth'});
+  }));
+
+  const pf=$('#progressFill');let ticking=false;
+  addEventListener('scroll',()=>{
+    if(ticking||reduce)return;ticking=true;
+    requestAnimationFrame(()=>{
+      const h=document.documentElement;
+      pf.style.transform='scaleX('+(h.scrollTop/((h.scrollHeight-h.clientHeight)||1))+')';
+      ticking=false;
+    });
+  },{passive:true});
+
+  $('#copyBtn').addEventListener('click',async e=>{
+    const b=e.currentTarget;
+    try{await navigator.clipboard.writeText($('#briefEmail').innerText);b.textContent='Copied';
+      toast('Briefing copied — paste into WhatsApp');setTimeout(()=>b.textContent='Copy text',1800);
+    }catch(_){toast('Copy blocked — select the text manually')}
+  });
+
+  $('#auditBtn').addEventListener('click', async () => {
+    const log = $('#auditLog');
+    if(log.style.display==='block'){log.style.display='none';return}
+    const cid = $('#clientSelect').value;
+    const res = await fetch('/api/assemble',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client:cid,use_llm:true})});
+    const p = await res.json();
+    log.textContent = (p.audit||[]).map(e=>`${e.ts}  ${e.user.padEnd(8)}  ${e.action.padEnd(18)}  ${e.client.padEnd(8)}  ${e.detail||''}  [${e.hash}]`).join('\n') || '(no events yet)';
+    log.style.display='block';
+  });
+})();
+</script>
+<script src="/wire.js"></script>
+</body>
+</html>

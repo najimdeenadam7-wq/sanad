@@ -1,0 +1,17 @@
+{
+  "client": "Sadaf Cold Chain Logistics K.S.C.",
+  "fy2025": {
+    "revenue_kwd": 9800000,
+    "net_income_kwd": 1150000,
+    "total_assets_kwd": 8000000,
+    "total_equity_kwd": 3600000,
+    "interest_bearing_debt_kwd": 400000,
+    "interest_income_pct": 0.0,
+    "gross_margin_pct": 22.4,
+    "auditor": "KPMG Al-Safi & Co - clean opinion"
+  },
+  "fy2024": {
+    "revenue_kwd": 8600000,
+    "net_income_kwd": 940000
+  }
+}
