@@ -51,15 +51,52 @@ def ingest_file(file_path: str) -> dict:
     # 2. Try fast text extraction for PDFs
     if ext == '.pdf':
         text, has_text = _extract_pdf_text(path)
-        if has_text:
+        if has_text and len(text.strip()) > 50:
             return {"text": text, "tables": [], "confidence": 1.0, "source_type": "text_pdf"}
+        
+        # Scanned PDF fallback via Gemini Multimodal Vision (Zero-cost/builtin fallback)
+        gemini_ocr_text = _ocr_with_gemini(path)
+        if gemini_ocr_text and len(gemini_ocr_text.strip()) > 10:
+            return {"text": gemini_ocr_text, "tables": [], "confidence": 0.95, "source_type": "scanned_pdf_gemini"}
     
     # 3. Google Vision for Scans/Images
     client = _get_vision_client()
     if client:
         return _process_with_vision(client, path, ext)
     else:
-        return {"error": "No text layer and no Vision API configured", "text": "", "tables": [], "confidence": 0}
+        return {"error": "No text layer found", "text": "", "tables": [], "confidence": 0}
+
+def _ocr_with_gemini(path: Path) -> str:
+    """Use Gemini Flash Multimodal OCR to extract text from scanned PDFs/images."""
+    key = os.environ.get("LLM_API_KEY")
+    if not key:
+        return ""
+    try:
+        import urllib.request, json
+        model = os.environ.get("LLM_MODEL", "gemini-flash-latest")
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
+        
+        with open(path, "rb") as f:
+            pdf_bytes = f.read()
+        b64_data = base64.b64encode(pdf_bytes).decode("utf-8")
+        
+        mime_type = "application/pdf" if path.suffix.lower() == ".pdf" else "image/png"
+        payload = {
+            "contents": [{
+                "parts": [
+                    {"inlineData": {"mimeType": mime_type, "data": b64_data}},
+                    {"text": "Perform complete, high-precision OCR on this document. Extract all text, numbers, tables, line items, headers, signatures, and dates exactly as they appear."}
+                ]
+            }],
+            "generationConfig": {"temperature": 0.0}
+        }
+        req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=45) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception as e:
+        print(f"Gemini OCR fallback notice: {e}")
+        return ""
 
 def _extract_pdf_text(path: Path):
     """Extract text from standard PDFs."""
