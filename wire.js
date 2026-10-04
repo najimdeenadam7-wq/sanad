@@ -201,11 +201,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#kindSelect').onchange = () => {};
   $('#assembleBtn').onclick = () => load();
   $('#fileInput').onchange = async e => {
-    const fd = new FormData(); fd.append('client', state.client);
+    if (!e.target.files.length) return;
+    toast('Ingesting & auto-extracting borrower info...');
+    const fd = new FormData();
+    if (state.client) fd.append('client', state.client);
     fd.append('kind', $('#kindSelect').value.toLowerCase());
-    for(const f of e.target.files) fd.append('files', f);
-    await fetch('/api/upload', {method:'POST', body:fd});
-    toast('Sources ingested — re-assembling'); load();
+    for (const f of e.target.files) fd.append('files', f);
+    
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Upload failed');
+      
+      toast('Document(s) ingested & borrower profile created!');
+      if (data.business_id) {
+        await refreshClients(data.business_id);
+      }
+      load();
+    } catch (err) {
+      toast('Upload error: ' + (err.message || 'Failed'));
+    }
   };
   $('#rmUp').onclick = async () => {
     await fetch('/api/remove_uploads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client:state.client})});

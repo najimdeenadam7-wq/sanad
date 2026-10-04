@@ -8,17 +8,19 @@ import os, re, urllib.request
 CIT = re.compile(r"\[(SRC-\d+#c\d+)\]")
 
 SECTIONS = [
- ("exec_summary", "1. Executive Summary & Facility Request",
+ ("ai_synthesis", "1. Autonomous AI Underwriting Synthesis & Credit Verdict",
+   ["autonomous credit opinion underwriting verdict recommendation approval risk", "shariah compliance score dscr stress test discrepancy summary"]),
+ ("exec_summary", "2. Executive Summary & Facility Request",
    ["facility limit increase renewal request", "client overview business activity", "proposed financing structure"]),
- ("background_ubo", "2. Borrower Background, Governance & UBO Structure",
+ ("background_ubo", "3. Borrower Background, Governance & UBO Structure",
    ["company registration capital signatories", "shareholders registry liens UBO beneficial", "relationship history meetings RM"]),
- ("financial_cashflow", "3. Financial & Cash-Flow Analysis (DSCR & Stress-Testing)",
+ ("financial_cashflow", "4. Financial & Cash-Flow Analysis (DSCR & Stress-Testing)",
    ["revenue net income margin audited", "total assets equity interest bearing debt", "ebitda debt service coverage ratio cash flow"]),
- ("shariah_governance", "4. Shariah Compliance, Purification & Islamic Structuring",
+ ("shariah_governance", "5. Shariah Compliance, Purification & Islamic Structuring",
    ["interest income conventional deposit purification", "insurance stake screened activity", "murabaha tawarruq ijarah restructuring"]),
- ("collateral_risks", "5. Collateral, Security & Risk Mitigation (LTV & Discrepancies)",
+ ("collateral_risks", "6. Collateral, Security & Risk Mitigation (LTV & Discrepancies)",
    ["mortgage liens collateral security ltv", "news market prices volatility conduct", "discrepancy reconciliation"]),
- ("recommendation_covenants", "6. Committee Recommendation & Proposed Covenants",
+ ("recommendation_covenants", "7. Committee Recommendation & Proposed Covenants",
    ["recommendation approval conditions", "debt service reserve account covenant dscr", "covenants compliance monitoring next steps"]),
 ]
 

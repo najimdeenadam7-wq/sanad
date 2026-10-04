@@ -203,7 +203,34 @@ async def upload_and_evaluate(
     user_id = user["sub"] if user else "anonymous"
 
     with db.tx() as s:
-        # Find business by ID or client / client_name
+        # Step 1: Save uploaded files to temporary processing buffer
+        temp_dir = UPLOAD_DIR / tenant_id / f"temp_{int(time.time()*1000)}"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        
+        texts_by_doc = {}
+        uploaded_files_info = []
+
+        for up in files:
+            safe_name = "".join(c for c in up.filename if c.isalnum() or c in "._- ")
+            file_path = temp_dir / safe_name
+            with open(file_path, "wb") as buf:
+                shutil.copyfileobj(up.file, buf)
+            
+            sha256 = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
+            ingest_res = smart_ingest.ingest_file(str(file_path))
+            doc_text = ingest_res.get("text", "")
+            texts_by_doc[up.filename] = doc_text
+            uploaded_files_info.append({
+                "filename": up.filename, "file_path": file_path, "sha256": sha256,
+                "ingest_res": ingest_res, "size_bytes": os.path.getsize(file_path)
+            })
+
+        combined_text = "\n\n".join(texts_by_doc.values())
+
+        # Step 2: Extract metadata automatically from document content using AI
+        ai_data = extractor.extract_all(combined_text)
+
+        # Step 3: Find or Auto-Create Business Entity
         target_client = (client or client_name or "").strip()
         biz = None
         if biz_id:
@@ -212,13 +239,30 @@ async def upload_and_evaluate(
             biz = s.query(db.Business).filter(db.Business.id == target_client).first()
             if not biz:
                 biz = s.query(db.Business).filter(db.Business.name == target_client).first()
-            if not biz:
-                new_id = db.new_id()
-                biz = db.Business(id=new_id, tenant_id=tenant_id, name=target_client, status="active", created_by=user_id)
-                s.add(biz); s.flush()
-        
+
+        # If no borrower entity specified, AUTO-CREATE from extracted AI profile or filename
         if not biz:
-            raise HTTPException(400, "Business or client name required")
+            prof = ai_data.get("profile", {})
+            auto_name = prof.get("Company Name") or prof.get("Entity Name") or prof.get("Borrower Name")
+            if not auto_name or auto_name in ["—", "N/A", "Unknown"]:
+                # derive clean name from first filename
+                auto_name = files[0].filename.rsplit(".", 1)[0].replace("_", " ").replace("-", " ").title()
+            
+            auto_sector = prof.get("Sector") or prof.get("Industry") or "Commercial Trading"
+            auto_cr = prof.get("CR No.") or prof.get("CR Number") or prof.get("Registration No.") or ""
+            
+            biz = s.query(db.Business).filter(db.Business.name == auto_name).first()
+            if not biz:
+                biz_id_new = db.new_id()
+                biz = db.Business(
+                    id=biz_id_new, tenant_id=tenant_id, name=auto_name,
+                    sector=auto_sector, cr_number=auto_cr, status="active", created_by=user_id
+                )
+                s.add(biz); s.flush()
+
+        # Move uploaded files to business directory
+        biz_upload_dir = UPLOAD_DIR / tenant_id / biz.id
+        biz_upload_dir.mkdir(parents=True, exist_ok=True)
 
         # Get or create active session
         session = s.query(db.Session_).filter(db.Session_.business_id == biz.id, db.Session_.status == "open").order_by(db.Session_.created_at.desc()).first()
@@ -226,52 +270,40 @@ async def upload_and_evaluate(
             session = db.Session_(id=db.new_id(), business_id=biz.id, status="open")
             s.add(session); s.flush()
 
-        # Step 1: Save & Ingest all uploaded files
-        biz_upload_dir = UPLOAD_DIR / tenant_id / biz.id
-        biz_upload_dir.mkdir(parents=True, exist_ok=True)
-        
-        texts_by_doc = {}
         all_chunks = []
         ingested_sources = []
 
-        for up in files:
-            safe_name = "".join(c for c in up.filename if c.isalnum() or c in "._- ")
-            file_path = biz_upload_dir / safe_name
-            with open(file_path, "wb") as buf:
-                shutil.copyfileobj(up.file, buf)
+        for item in uploaded_files_info:
+            final_path = biz_upload_dir / item["file_path"].name
+            shutil.move(item["file_path"], final_path)
             
-            sha256 = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
-            ingest_res = smart_ingest.ingest_file(str(file_path))
-            doc_text = ingest_res.get("text", "")
-            texts_by_doc[up.filename] = doc_text
-
             source_id = db.new_id()
             src = db.Source(
-                id=source_id, session_id=session.id, filename=up.filename, kind=kind,
-                storage_key=str(file_path), sha256=sha256, size_bytes=os.path.getsize(file_path),
-                ocr_status=ingest_res.get("source_type", "text"),
-                ocr_confidence=ingest_res.get("confidence", 1.0),
+                id=source_id, session_id=session.id, filename=item["filename"], kind=kind,
+                storage_key=str(final_path), sha256=item["sha256"], size_bytes=item["size_bytes"],
+                ocr_status=item["ingest_res"].get("source_type", "text"),
+                ocr_confidence=item["ingest_res"].get("confidence", 1.0),
                 uploaded_by=user_id
             )
             s.add(src); s.flush()
             ingested_sources.append(src)
 
-            # Store chunk objects for BM25 / memo generation
             chunk_obj = type("Chunk", (), {
                 "chunk_id": f"SRC-{len(ingested_sources):03d}#c0",
                 "source_id": source_id,
-                "doc": up.filename,
+                "doc": item["filename"],
                 "kind": kind,
-                "text": doc_text[:1200]
+                "text": texts_by_doc[item["filename"]][:1200]
             })()
             all_chunks.append(chunk_obj)
 
-            # Persist extract to source_extracts table
             extract_id = db.new_id()
             s.add(db.SourceExtract(
                 id=extract_id, source_id=source_id, extract_type="raw_text",
-                content_json={"text": doc_text[:2000]}, confidence=ingest_res.get("confidence", 1.0)
+                content_json={"text": texts_by_doc[item["filename"]][:2000]}, confidence=item["ingest_res"].get("confidence", 1.0)
             ))
+
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
         combined_text = "\n\n".join(texts_by_doc.values())
 
