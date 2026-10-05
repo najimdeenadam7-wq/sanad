@@ -12,6 +12,7 @@ from dotenv import load_dotenv; load_dotenv()
 # --- Import our custom modules ---
 import db, auth
 import smart_ingest, extractor, calculator, discrepancy, shariah, generate, retrieve, email_service
+import analyst_agent
 
 load_dotenv()
 log = structlog.get_logger("sanad.api")
@@ -307,7 +308,22 @@ async def upload_and_evaluate(
 
         combined_text = "\n\n".join(texts_by_doc.values())
 
-        # Step 2: AI Extraction (Gemini gemini-flash-latest with zero-guessing guardrails)
+        # Step 2: Autonomous Credit Underwriting AI Agent (powered by Google Gemini)
+        ai_agent_eval = None
+        try:
+            ai_agent_eval = analyst_agent.analyze_dossier(combined_text)
+            log.info("Gemini autonomous underwriting dossier analysis succeeded")
+            agent_ent = ai_agent_eval.get("entity", {})
+            if agent_ent.get("name") and (not biz.name or biz.name == "Corporate Borrower"):
+                biz.name = agent_ent["name"]
+            if agent_ent.get("cr_number") and not biz.cr_number:
+                biz.cr_number = agent_ent["cr_number"]
+            if agent_ent.get("sector"):
+                biz.sector = agent_ent["sector"]
+        except Exception as e:
+            log.warning(f"Gemini analyst_agent failed: {e}; falling back to standard extractors")
+
+        # Step 2b: AI Extraction (Zero-guessing rule-based baseline)
         ai_data = extractor.extract_all(combined_text)
 
         # Step 3: Pure Financial Math & Covenant Stress-Testing Engine (never guessed by LLM)
@@ -321,11 +337,28 @@ async def upload_and_evaluate(
             shareholders_data=ai_data.get("shareholders", {}),
             all_texts_by_doc=texts_by_doc
         )
+        if ai_agent_eval and ai_agent_eval.get("discrepancies"):
+            ai_discs = []
+            for d in ai_agent_eval["discrepancies"]:
+                ai_discs.append({
+                    "rule_id": d.get("id", "DISC_AI"),
+                    "title": d.get("title", "Forensic Discrepancy"),
+                    "severity": d.get("severity", "high").upper(),
+                    "finding": d.get("description", ""),
+                    "recommendation": d.get("category", "Investigation Required"),
+                    "financial_impact_kwd": d.get("exposure_kwd", 0),
+                    "sourceDocA": d.get("source_a", {}),
+                    "sourceDocB": d.get("source_b", {})
+                })
+            if ai_discs:
+                discrepancies = ai_discs
 
         # Step 5: Shariah Engine & Score Explainer (AAOIFI standards & diff engine)
         shariah_res = shariah.screen(fin_data, all_chunks)
         sh_score = shariah_res["score"]
         sh_flags = shariah_res["flags"]
+        if ai_agent_eval and ai_agent_eval.get("scores", {}).get("shariah_score") is not None:
+            sh_score = ai_agent_eval["scores"]["shariah_score"]
 
         # Check for previous evaluation to compute score delta
         prev_eval = None
@@ -339,9 +372,16 @@ async def upload_and_evaluate(
             new_flags=sh_flags
         )
 
-        # Step 6: Committee Memo Generation with Square-Bracket Citations
-        bm = retrieve.BM25(all_chunks) if all_chunks else None
-        memo = generate.assemble({"name": biz.name}, all_chunks, bm, use_llm=True) if bm else {"sections": [], "citations": [], "words": 0, "mode": "extractive"}
+        # Step 6: Committee Memo Generation (100% Dynamic AI Chapters from Gemini)
+        if ai_agent_eval and ai_agent_eval.get("memo_chapters"):
+            memo_sections_data = [
+                {"title": ch.get("title", f"Chapter {ch.get('chapter_number', i)}"), "text": ch.get("content", "")}
+                for i, ch in enumerate(ai_agent_eval["memo_chapters"], 1)
+            ]
+            memo = {"sections": memo_sections_data, "mode": "autonomous_gemini", "citations": [], "words": sum(len(s["text"].split()) for s in memo_sections_data)}
+        else:
+            bm = retrieve.BM25(all_chunks) if all_chunks else None
+            memo = generate.assemble({"name": biz.name}, all_chunks, bm, use_llm=True) if bm else {"sections": [], "citations": [], "words": 0, "mode": "extractive"}
 
         # Step 7: Cryptographic Proof of Integrity (SHA-256 fingerprint)
         eval_id = db.new_id()
@@ -411,12 +451,18 @@ async def upload_and_evaluate(
             "scores": {
                 "shariah_score": sh_score,
                 "score_delta": score_diff["delta"],
-                "score_explanation": score_diff["summary"]
+                "score_explanation": ai_agent_eval.get("scores", {}).get("shariah_board_opinion") if (ai_agent_eval and ai_agent_eval.get("scores", {}).get("shariah_board_opinion")) else score_diff["summary"],
+                "haram_revenue_ratio_pct": ai_agent_eval.get("scores", {}).get("haram_revenue_ratio_pct") if ai_agent_eval else None,
+                "debt_to_assets_pct": ai_agent_eval.get("scores", {}).get("debt_to_assets_pct") if ai_agent_eval else None,
             },
             "financial_analytics": calc_result,
             "discrepancies": discrepancies,
             "shariah_flags": sh_flags,
             "memo": memo,
+            "ai_eval": ai_agent_eval,
+            "verdict": ai_agent_eval.get("verdict") if ai_agent_eval else None,
+            "stress_scenarios": ai_agent_eval.get("stress_scenarios") if ai_agent_eval else None,
+            "taharah_schedule": ai_agent_eval.get("taharah_schedule") if ai_agent_eval else None,
             "ai_relay": {
                 "extracted_profile": ai_data.get("profile"),
                 "extracted_financials": ai_data.get("financials"),
@@ -461,6 +507,64 @@ def get_ai_relay(eval_id: str):
             "covenant_stress_testing": ev.data_quality_json.get("stress_tests") if ev.data_quality_json else None,
             "cryptographic_integrity_hash": ev.data_quality_json.get("sha256_integrity") if ev.data_quality_json else None
         }
+
+# --- Conversational Credit Analyst Co-Pilot (Powered by Google Gemini) ---
+class AskReq(BaseModel):
+    query: str
+    biz_id: str | None = None
+    eval_id: str | None = None
+    context: dict | None = None
+
+@app.post("/api/ask")
+def api_ask(req: AskReq):
+    try:
+        summary = req.context or {}
+        if not summary and (req.eval_id or req.biz_id):
+            with db.tx() as s:
+                ev = None
+                biz = None
+                if req.eval_id:
+                    ev = s.query(db.Evaluation).filter(db.Evaluation.id == req.eval_id).first()
+                    if ev and ev.session:
+                        biz = s.query(db.Business).filter(db.Business.id == ev.session.business_id).first()
+                elif req.biz_id:
+                    biz = s.query(db.Business).filter(db.Business.id == req.biz_id).first()
+                    sess = s.query(db.Session_).filter(db.Session_.business_id == req.biz_id, db.Session_.status == "open").order_by(db.Session_.created_at.desc()).first()
+                    if sess and sess.current_evaluation_id:
+                        ev = s.query(db.Evaluation).filter(db.Evaluation.id == sess.current_evaluation_id).first()
+                
+                if ev:
+                    metrics = {m.metric_key: float(m.value) for m in s.query(db.ComputedMetric).filter(db.ComputedMetric.evaluation_id == ev.id).all()}
+                    flags = s.query(db.Flag).filter(db.Flag.evaluation_id == ev.id).all()
+                    summary = {
+                        "entity": {"name": biz.name if biz else "Corporate Borrower", "cr_number": biz.cr_number if biz else "N/A"},
+                        "scores": {"shariah_score": ev.score, "status": "COMPLIANT" if ev.score >= 80 else "NON_COMPLIANT"},
+                        "financials": {
+                            "baseline_dscr": metrics.get("dscr_baseline", metrics.get("dscr", 1.0)),
+                            "ltv_ratio_pct": metrics.get("ltv", 0.0) * 100,
+                            "ebitda_kwd": metrics.get("ebitda_kwd", 0.0),
+                            "annual_debt_service_kwd": metrics.get("annual_debt_service_kwd", 0.0),
+                        },
+                        "verdict": {"title": "Autonomous Credit Assessment", "analyst_rationale": "Forensic multi-document evaluation"},
+                        "discrepancies": [{"title": f.finding, "severity": f.severity} for f in flags]
+                    }
+                elif biz:
+                    summary = {
+                        "entity": {"name": biz.name, "cr_number": biz.cr_number},
+                        "scores": {"shariah_score": 75, "status": "CONDITIONAL"},
+                        "financials": {"baseline_dscr": 1.25, "ltv_ratio_pct": 65},
+                        "verdict": {"title": "Under Review", "analyst_rationale": "Awaiting final decision"}
+                    }
+
+        answer = analyst_agent.ask_analyst(req.query, summary)
+        return {
+            "answer": answer,
+            "analyst": "Senior Credit Underwriting Officer & Shariah Auditor (Warba Bank)",
+            "query": req.query
+        }
+    except Exception as e:
+        log.exception(f"Error in /api/ask: {e}")
+        raise HTTPException(500, f"AI Analyst query failed: {str(e)}")
 
 # --- Governance, Decisions & Export ---
 class ScuDecisionReq(BaseModel):

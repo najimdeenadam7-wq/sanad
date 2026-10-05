@@ -8,3 +8,5 @@ data/*/shariah_review.json
 _eval_audit.log
 .streamlit/secrets.toml
 .streamlit/
+
+scratch/
