@@ -42,6 +42,10 @@ CRITICAL INSTRUCTION FOR MEMO CHAPTERS (ZERO 4-LINE SUMMARIES):
 - Chapter 3 (Forensic Cross-Document Detective Findings): Detailed multi-paragraph forensic circularization comparing the Ministry of Commerce registry and Central Bank (CiNet) bureau reports directly against the audited financial footnotes (specifically citing Note 14 contingent debt, Note 18 pledged collateral, and Note 22 related-party balances). State exact conflicting values, lien exposures, and security perfection risks.
 - Chapter 4 (Islamic Structuring & Taharah/Zakat Mandate): Comprehensive Islamic structuring rationale (Commodity Murabaha / Tawarruq / Ijara Muntahia Bittamleek), exact four-tier step-down calculation of the Zakatable base under AAOIFI 35, the exact Taharah purification computation down to the fil with Bait Al-Zakat designation, and mandatory Conditions Precedent required before initial facility drawdown.
 
+CRITICAL INSTRUCTION FOR DOCUMENT & PAGE PROVENANCE:
+- For EVERY discrepancy, covenant figure, or citation, identify the EXACT source document filename (e.g. "Audited_Financials_FY2025.pdf", "MOCI_Commercial_Registry.pdf", "CBK_CiNet_Credit_Bureau.pdf") and the EXACT page number and note or line reference (e.g. "Page 48, Note 18", "Page 2, Clause 4.1", "Schedule 3, Row 9").
+- Never output vague placeholders like "Doc A" or "Page 1". Extract the true page/note references from the text.
+
 Write your rationale, findings, and explanations in sophisticated, institutional credit banking prose in the first person ("I have analyzed...", "Our forensic audit reveals..."). Do NOT output generic placeholders. Every sentence must reflect the exact borrower data.
 
 Return ONLY a valid JSON object matching this schema:
@@ -89,8 +93,16 @@ Return ONLY a valid JSON object matching this schema:
       "category": string,
       "description": string,
       "exposure_kwd": number,
-      "source_a": { "name": string, "excerpt": string },
-      "source_b": { "name": string, "excerpt": string }
+      "source_a": { "name": string, "page_or_ref": string, "excerpt": string },
+      "source_b": { "name": string, "page_or_ref": string, "excerpt": string }
+    }
+  ],
+  "citations": [
+    {
+      "code": string,
+      "doc_name": string,
+      "page_or_ref": string,
+      "excerpt": string
     }
   ],
   "taharah_schedule": {

@@ -340,6 +340,8 @@ async def upload_and_evaluate(
         if ai_agent_eval and ai_agent_eval.get("discrepancies"):
             ai_discs = []
             for d in ai_agent_eval["discrepancies"]:
+                src_a = d.get("source_a", {})
+                src_b = d.get("source_b", {})
                 ai_discs.append({
                     "rule_id": d.get("id", "DISC_AI"),
                     "title": d.get("title", "Forensic Discrepancy"),
@@ -347,8 +349,16 @@ async def upload_and_evaluate(
                     "finding": d.get("description", ""),
                     "recommendation": d.get("category", "Investigation Required"),
                     "financial_impact_kwd": d.get("exposure_kwd", 0),
-                    "sourceDocA": d.get("source_a", {}),
-                    "sourceDocB": d.get("source_b", {})
+                    "sourceDocA": {
+                        "name": src_a.get("name", "Document A"),
+                        "pageOrRef": src_a.get("page_or_ref") or src_a.get("page", "Page 1"),
+                        "excerpt": src_a.get("excerpt", "")
+                    },
+                    "sourceDocB": {
+                        "name": src_b.get("name", "Document B"),
+                        "pageOrRef": src_b.get("page_or_ref") or src_b.get("page", "Page 1"),
+                        "excerpt": src_b.get("excerpt", "")
+                    }
                 })
             if ai_discs:
                 discrepancies = ai_discs
