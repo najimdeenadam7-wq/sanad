@@ -1,0 +1,45 @@
+QABAS TRADING & CONTRACTING K.S.C.C.
+COMMERCIAL REGISTRATION NO: 1149204-KW
+AUDITED FINANCIAL STATEMENTS — FY2025 (PERIOD ENDED 31 DECEMBER 2025)
+
+1. STATEMENT OF COMPREHENSIVE INCOME
+Gross Operating Revenue: KWD 10,950,000
+Conventional Commercial Sub-Lease Income: KWD 580,000
+Bank Interest Income from Term Placements: KWD 340,000
+Total Revenues: KWD 11,870,000
+Prohibited Revenue Ratio: (580,000 + 340,000) / 10,950,000 = 8.40% (Exceeds AAOIFI 5.0% Ceiling)
+
+Cost of Operations: KWD (8,850,000)
+Gross Operating Profit: KWD 3,020,000
+General & Administrative Expenses: KWD (1,850,000)
+EBITDA: KWD 1,170,000
+Operating Margin: 10.7%
+
+Conventional Debt Interest Expense: KWD (620,000)
+Net Profit Before Tax: KWD 550,000
+
+2. STATEMENT OF FINANCIAL POSITION (BALANCE SHEET)
+Total Cash & Bank Balances: KWD 1,420,000
+Trade Accounts Receivable: KWD 3,850,000
+Inventories & Work-in-Progress: KWD 4,100,000
+Property, Plant & Heavy Construction Fleet: KWD 18,630,000
+TOTAL ASSETS: KWD 28,000,000
+
+Short-Term Conventional Bank Borrowings: KWD 4,800,000
+Long-Term Conventional Mortgages & Loans: KWD 7,100,000
+Total Conventional Debt Liabilities: KWD 11,900,000
+Debt-to-Total-Assets Ratio: 11,900,000 / 28,000,000 = 42.50% (Exceeds AAOIFI 30.0% Ceiling)
+
+Trade Payables & Accruals: KWD 5,100,000
+Total Equity: KWD 11,000,000
+TOTAL LIABILITIES & EQUITY: KWD 28,000,000
+
+3. DEBT SERVICE COVERAGE RATIO (DSCR)
+Annual Debt Obligation (Principal + Interest): KWD 1,330,000
+Normalized Operating EBITDA: KWD 1,170,000
+Baseline DSCR: 1,170,000 / 1,330,000 = 0.88x (BREACH of Warba Covenant Floor 1.25x)
+
+4. FACILITY REQUEST & COLLATERAL
+Murabaha Facility Requested: KWD 3,500,000
+Appraised Collateral Value: KWD 5,000,000
+Loan-to-Value (LTV): 70.0%

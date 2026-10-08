@@ -1,0 +1,13 @@
+CENTRAL BANK OF KUWAIT / CI-NET CREDIT BUREAU LEDGER
+Target Entity: Gulf Retail & Distribution K.S.C.C. [CR #312095-KW]
+Report Date: 2026-10-04 | Status: VERIFIED & CLEAN
+
+1. Bureau Score: 785 / 850 (Prime Credit Tier - Low Risk)
+2. Existing Bank Facilities: KWD 1,920,000 Conventional Term Loan (Maturing 2026-12, replacing with Warba Commodity Murabaha)
+3. 24-Month Delinquency Record: 0 Overdues | 0 Bounced Cheques | 0 Litigation Claims
+4. Encumbrance & Collateral Verification:
+   - Pledged Real Estate: Commercial Cold Storage Complex, Shuwaikh Industrial Area, Block 1, Plot 42
+   - Registered Title Deed #: 48291 / MOCI Registry Verified
+   - Independent Valuation: KWD 2,750,000 (First-degree unencumbered charge)
+   - Requested Facility Envelope: KWD 2,200,000 Commodity Murabaha / Tawarruq
+   - Resulting LTV: 80.0% (Policy Ceiling: 85.0%)

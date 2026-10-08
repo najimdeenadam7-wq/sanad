@@ -1,0 +1,17 @@
+CENTRAL BANK OF KUWAIT (CBK) CREDIT BUREAU REPORT
+SUBJECT: QABAS TRADING & CONTRACTING K.S.C.C.
+COMMERCIAL REGISTRATION NO: 1149204-KW
+REPORT GENERATED: 04-OCTOBER-2026
+
+1. REGISTERED CREDIT FACILITIES & MORTGAGE PLEDGES
+- Facility #1: Registered Commercial Hypothec & Deed Pledge
+  Creditor Bank: National Commercial Bank
+  Outstanding Balance: KWD 1,450,000
+  Pledged Asset: Shuwaikh Industrial Plot 88-C & Heavy Equipment Fleet
+  Registration Status: ACTIVE FIRST-DEGREE MORTGAGE (Maturity Sept 2029)
+  Affidavit Conflict: Ministry of Commerce extract asserts zero encumbrances on Plot 88-C.
+
+2. CREDIT HISTORICAL RISK SUMMARY
+- Trailing 24-Month Delinquencies: 2 instances of 30-day past-due payments on equipment financing.
+- Total Active Exposure across Banking Sector: KWD 13,350,000
+- Over-Leverage Risk Flag: SEVERE (Debt/Assets 42.5%, DSCR 0.88x)

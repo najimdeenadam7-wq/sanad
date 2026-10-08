@@ -1,0 +1,14 @@
+CENTRAL BANK OF KUWAIT / CI-NET CREDIT BUREAU LEDGER
+Target Entity: Al-Manar Industrial & Logistics K.S.C.C. [CR #482910-KW]
+Report Date: 2026-10-04 | Status: CONDITIONAL
+
+1. Bureau Credit Score: 640 / 850 (Moderate Risk - SCU & Credit Review Required)
+2. Existing Debt Facilities: KWD 3,400,000 Conventional Term Loan (Requires conversion to Commodity Murabaha)
+3. Delinquency Record: 1 Overdue Instance (30-day delay in Q2 2025 due to supply chain delay)
+4. DISCREPANCY & UNDISCLOSED MORTGAGE FINDING:
+   - Ministry of Commerce Registry reveals an unrecorded commercial pledge of KWD 450,000 on 12 heavy transport vehicles held by a local commercial bank, NOT declared in initial credit disclosure.
+5. Collateral Valuation:
+   - Pledged Real Estate: Sulaibiya Logistics Park, Block 3, Plot 18 (Title Deed #91204)
+   - Independent Valuation: KWD 4,200,000
+   - Requested Facility Envelope: KWD 3,500,000 Murabaha
+   - LTV: 83.3% (Max Ceiling: 85.0%)
