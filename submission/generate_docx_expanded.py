@@ -75,6 +75,8 @@ def create_comprehensive_docx(output_path):
     set_cell_margins(c_box, top=140, bottom=140, left=200, right=200)
     p_box = c_box.paragraphs[0]
     r_m = p_box.add_run(
+        "👥 Core Engineering Team: Najimdeen Adam Oyeyemi & Olagunju Temitope\n"
+        "💻 Technology Stack: React 19, TypeScript, Vite, Tailwind CSS, Python (FastAPI), Google Gemini 2.5, Uvicorn, Docker, Netlify, Railway\n"
         "🌐 Live Production Application: https://sanad-engine.netlify.app\n"
         "⚡ High-Availability Backend API: https://sanad-production-9d51.up.railway.app/health\n"
         "📂 Production GitHub Repository: https://github.com/anajimdeen01-debug/sanad-frontend\n"
@@ -294,9 +296,26 @@ def create_comprehensive_docx(output_path):
     doc.add_paragraph()
 
     # =========================================================================
-    # SECTION 8: SELF-GUIDED EVALUATION PROTOCOL FOR JUDGES
+    # SECTION 8: TEAM & ARCHITECTURAL TECH STACK
     # =========================================================================
-    add_sec_heading("Production Readiness & 60-Second Evaluation Protocol", "8.")
+    add_sec_heading("Core Team & Technology Stack", "8.")
+    add_body("SANAD was engineered from the ground up for the Warba Bank Corporate Banking AI Challenge 2026 by an agile financial technology engineering team:")
+    add_bullet("Najimdeen Adam Oyeyemi", "Lead AI & Financial Architecture Engineer — Spearheaded autonomous Google Gemini reasoning pipelines, adversarial document circularization, and AAOIFI deterministic Shariah accounting engine.")
+    add_bullet("Olagunju Temitope", "Full-Stack & Systems Infrastructure Engineer — Built the high-availability FastAPI backend, cryptographic governance ledger, responsive institutional frontend, and zero-downtime deployment infrastructure.")
+
+    add_sub_heading("Enterprise Technology Stack:")
+    add_bullet("Frontend Architecture", "React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Canvas-Confetti, Recharts financial data visualization.")
+    add_bullet("Backend & Microservices", "Python 3.11, FastAPI, Uvicorn ASGI server, Pydantic data schemas, python-docx, python-pptx, ReportLab.")
+    add_bullet("Artificial Intelligence & LLM Engine", "Google Gemini 2.5 Flash / Pro (multi-modal document reasoning, unscripted credit analysis, and automated multi-chapter synthesis).")
+    add_bullet("Security & Privacy", "On-Premises Regex & Named-Entity Recognition (NER) Sovereign Redaction Shield for CBK Civil ID and PII protection.")
+    add_bullet("Deployment & Cloud Infrastructure", "Railway (Production API & Containerized Python Service), Netlify (Global CDN Edge Hosting for Web Platform), Git / GitHub.")
+
+    doc.add_paragraph()
+
+    # =========================================================================
+    # SECTION 9: SELF-GUIDED EVALUATION PROTOCOL FOR JUDGES
+    # =========================================================================
+    add_sec_heading("Production Readiness & 60-Second Evaluation Protocol", "9.")
     add_body("SANAD is not a conceptual mockup. A fully functional, production-hardened instance is live, connected to cloud microservices, and ready for immediate evaluation:")
 
     add_body("• Live Production Application: https://sanad-engine.netlify.app\n"

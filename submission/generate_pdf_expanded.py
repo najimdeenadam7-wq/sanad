@@ -136,7 +136,9 @@ def build_pdf(filename):
 
     cover_meta = [
         [
-            Paragraph("<b>🌐 Live Production App:</b> <font color='#60A5FA'><u>https://sanad-engine.netlify.app</u></font><br/>"
+            Paragraph("<b>👥 Core Team:</b> <font color='#10B981'><b>Najimdeen Adam Oyeyemi & Olagunju Temitope</b></font><br/>"
+                      "<b>💻 Tech Stack:</b> React 19, TypeScript, Vite, Python (FastAPI), Google Gemini 2.5, Docker, Railway, Netlify<br/>"
+                      "<b>🌐 Live Production App:</b> <font color='#60A5FA'><u>https://sanad-engine.netlify.app</u></font><br/>"
                       "<b>⚡ Live Backend API:</b> <font color='#60A5FA'><u>https://sanad-production-9d51.up.railway.app/health</u></font><br/>"
                       "<b>📂 GitHub Repository:</b> <font color='#60A5FA'><u>https://github.com/anajimdeen01-debug/sanad-frontend</u></font>", card_body)
         ]

@@ -12,7 +12,10 @@
 
 - **Challenge:** Warba Bank Corporate Banking AI Challenge 2026
 - **Track:** Track 1 — AI-Powered Client Documentation & Underwriting
-- **Team:** Sanad Engineering Group
+- **Team Members:**
+  - **Najimdeen Adam Oyeyemi** (Lead AI & Financial Architecture Engineer)
+  - **Olagunju Temitope** (Full-Stack & Systems Infrastructure Engineer)
+- **Technology Stack:** React 19, TypeScript, Vite, Python 3.11 (FastAPI), Google Gemini 2.5, Uvicorn, Docker, Railway, Netlify
 - **Key Proposition:** Autonomous cross-document circularization, AAOIFI Shariah purification, and proactive revenue intelligence for relationship managers.
 
 > **Speaker Note:**  

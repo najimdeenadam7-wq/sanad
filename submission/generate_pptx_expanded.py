@@ -115,25 +115,39 @@ def build_expanded_deck(output_path):
     p3.font.color.rgb = c_light_slate
     p3.space_before = Pt(14)
 
-    meta_card = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.0), Inches(5.1), Inches(11.3), Inches(1.5))
+    meta_card = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.0), Inches(4.9), Inches(11.3), Inches(1.9))
     meta_card.fill.solid()
     meta_card.fill.fore_color.rgb = c_dark_card
     meta_card.line.color.rgb = c_blue
 
-    mtb = s1.shapes.add_textbox(Inches(1.2), Inches(5.2), Inches(10.9), Inches(1.3))
+    mtb = s1.shapes.add_textbox(Inches(1.2), Inches(5.0), Inches(10.9), Inches(1.7))
     mtf = mtb.text_frame
     mtf.word_wrap = True
     mp = mtf.paragraphs[0]
-    mp.text = "🌐 Live Production Web App: https://sanad-engine.netlify.app"
+    mp.text = "👥 Core Team: Najimdeen Adam Oyeyemi & Olagunju Temitope"
     mp.font.size = Pt(13)
     mp.font.bold = True
-    mp.font.color.rgb = c_white
+    mp.font.color.rgb = c_emerald
+
+    mp_tech = mtf.add_paragraph()
+    mp_tech.text = "💻 Stack: React 19, TypeScript, Vite, Python (FastAPI), Google Gemini 2.5, Docker, Railway, Netlify"
+    mp_tech.font.size = Pt(11)
+    mp_tech.font.bold = True
+    mp_tech.font.color.rgb = c_white
+    mp_tech.space_before = Pt(3)
+
+    mp1 = mtf.add_paragraph()
+    mp1.text = "🌐 Live Production Web App: https://sanad-engine.netlify.app | ⚡ Backend API: https://sanad-production-9d51.up.railway.app/health"
+    mp1.font.size = Pt(10.5)
+    mp1.font.bold = True
+    mp1.font.color.rgb = c_blue
+    mp1.space_before = Pt(3)
 
     mp2 = mtf.add_paragraph()
-    mp2.text = "⚡ High-Availability Backend API: https://sanad-production-9d51.up.railway.app/health\n📂 Public GitHub Repository: https://github.com/anajimdeen01-debug/sanad-frontend\n📜 Standard Adherence: AAOIFI Standards No. 21 & 35 | Central Bank of Kuwait (CBK) Risk Covenants"
-    mp2.font.size = Pt(10.5)
+    mp2.text = "📂 Public GitHub Repository: https://github.com/anajimdeen01-debug/sanad-frontend\n📜 Standard Adherence: AAOIFI Standards No. 21 & 35 | Central Bank of Kuwait (CBK) Risk Covenants"
+    mp2.font.size = Pt(10)
     mp2.font.color.rgb = c_slate
-    mp2.space_before = Pt(4)
+    mp2.space_before = Pt(3)
 
     # ==================== SLIDE 2: THE PROBLEM ====================
     s2 = prs.slides.add_slide(blank_layout)
@@ -379,17 +393,46 @@ def build_expanded_deck(output_path):
               "Cryptographic Governance Ledger: SHA-256 and Merkle root block height verify institutional auditability."],
              border_color=c_emerald, accent_sub="Institutional Defensibility")
 
-    # ==================== SLIDE 12: EVALUATION PROTOCOL ====================
+    # ==================== SLIDE 12: CORE TEAM & TECHNOLOGY STACK ====================
     s12 = prs.slides.add_slide(blank_layout)
     add_bg(s12)
-    add_header(s12, "Production Readiness: Live Demo & 60-Second Evaluation Protocol")
+    add_header(s12, "Core Engineering Team & Production Technology Stack")
 
-    add_card(s12, Inches(0.8), Inches(1.8), Inches(11.6), Inches(4.8),
+    add_card(s12, Inches(0.8), Inches(1.8), Inches(5.6), Inches(4.8),
+             "Engineering Team Leadership",
+             ["Najimdeen Adam Oyeyemi",
+              "Role: Lead AI & Financial Systems Architect",
+              "Engineered: Google Gemini 2.5 autonomous multi-doc analysis pipelines, adversarial circularization engine, and AAOIFI deterministic Shariah accounting modules.",
+              " ",
+              "Olagunju Temitope",
+              "Role: Full-Stack & Cloud Infrastructure Engineer",
+              "Engineered: High-availability FastAPI backend, cryptographic governance ledger, institutional React 19 UI, and production containerization on Railway & Netlify."],
+             border_color=c_emerald, accent_sub="Founding Team")
+
+    add_card(s12, Inches(6.8), Inches(1.8), Inches(5.6), Inches(4.8),
+             "Enterprise Technology Stack",
+             ["Frontend Architecture:",
+              "React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Recharts financial data visualization.",
+              "Backend & Microservices:",
+              "Python 3.11, FastAPI, Uvicorn ASGI server, Pydantic schemas, python-docx, python-pptx, ReportLab.",
+              "AI & Analytical Inference:",
+              "Google Gemini 2.5 Flash / Pro (multi-modal reasoning, unscripted document analysis, automated CAM synthesis).",
+              "Cloud & Deployment Infrastructure:",
+              "Railway (Containerized Python API), Netlify (Global CDN Edge Web Hosting), Git / GitHub."],
+             border_color=c_blue, accent_sub="Modular Architecture")
+
+    # ==================== SLIDE 13: EVALUATION PROTOCOL ====================
+    s13 = prs.slides.add_slide(blank_layout)
+    add_bg(s13)
+    add_header(s13, "Production Readiness: Live Demo & 60-Second Evaluation Protocol")
+
+    add_card(s13, Inches(0.8), Inches(1.8), Inches(11.6), Inches(4.8),
              "Test the Live Production Application Directly",
              [
                "🌐 Live Production Web App: https://sanad-engine.netlify.app",
                "⚡ Live Backend API: https://sanad-production-9d51.up.railway.app",
                "📂 GitHub Code Repository: https://github.com/anajimdeen01-debug/sanad-frontend",
+               "👥 Engineering Team: Najimdeen Adam Oyeyemi & Olagunju Temitope",
                " ",
                "STEP-BY-STEP EVALUATION GUIDE FOR JUDGES (60 SECONDS):",
                "1. Open Gulf Pearl Foods Trading (CR #204918-KW) from the main directory.",

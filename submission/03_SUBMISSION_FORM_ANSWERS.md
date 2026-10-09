@@ -19,7 +19,24 @@ Use the text blocks below to directly copy and paste into the hackathon submissi
 
 ---
 
-### 4. Live Demo & Public Code Repositories
+### 4. Team Members & Roles
+- **Najimdeen Adam Oyeyemi** — *Lead AI & Financial Architecture Engineer*  
+  Spearheaded autonomous Google Gemini 2.5 multi-document reasoning pipelines, adversarial cross-document circularization, and AAOIFI deterministic Shariah accounting engine.
+- **Olagunju Temitope** — *Full-Stack & Systems Infrastructure Engineer*  
+  Engineered the high-availability FastAPI backend, cryptographic governance ledger, institutional React 19 UI, and containerized deployment infrastructure on Railway and Netlify.
+
+---
+
+### 5. Technology Stack
+- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Recharts, Canvas-Confetti
+- **Backend & APIs:** Python 3.11, FastAPI, Uvicorn ASGI Server, Pydantic data schemas, ReportLab, python-docx, python-pptx
+- **AI & Document Reasoning:** Google Gemini 2.5 Flash / Pro (multi-modal reasoning, unscripted credit analysis, automated CAM synthesis)
+- **Security & Privacy:** On-Premises Regex & NER Sovereign Redaction Shield for CBK Civil ID and sovereign PII protection
+- **Cloud Infrastructure & DevOps:** Railway (Containerized Python Service), Netlify (Global Edge CDN), Git / GitHub
+
+---
+
+### 6. Live Demo & Public Code Repositories
 - **Live Production Application:** [https://sanad-engine.netlify.app](https://sanad-engine.netlify.app)
 - **Live Backend API:** [https://sanad-production-9d51.up.railway.app](https://sanad-production-9d51.up.railway.app)
 - **API Health Check:** `https://sanad-production-9d51.up.railway.app/health`

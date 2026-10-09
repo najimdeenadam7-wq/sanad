@@ -5,6 +5,29 @@
 [![Backend API](https://img.shields.io/badge/FastAPI%20Backend-Railway-blue?style=for-the-badge&logo=railway)](https://sanad-production-9d51.up.railway.app)
 [![Compliance](https://img.shields.io/badge/AAOIFI-Standard%2021%20Compliant-amber?style=for-the-badge)](https://aaoifi.com)
 [![CBK](https://img.shields.io/badge/CBK-Sovereign%20Privacy%20Shield-indigo?style=for-the-badge)](https://www.cbk.gov.kw)
+[![Tech Stack](https://img.shields.io/badge/Stack-React%2019%20%7C%20FastAPI%20%7C%20Gemini%202.5-blueviolet?style=for-the-badge)](https://github.com/anajimdeen01-debug/sanad-frontend)
+[![Team](https://img.shields.io/badge/Team-Najimdeen%20Adam%20%26%20Olagunju%20Temitope-success?style=for-the-badge)](#-core-engineering-team)
+
+---
+
+## 👥 Core Engineering Team
+
+- **Najimdeen Adam Oyeyemi** — *Lead AI & Financial Architecture Engineer*  
+  Spearheaded autonomous Google Gemini 2.5 reasoning pipelines, adversarial cross-document circularization, and AAOIFI deterministic Shariah accounting engine.
+- **Olagunju Temitope** — *Full-Stack & Systems Infrastructure Engineer*  
+  Engineered the high-availability FastAPI backend, cryptographic governance ledger, institutional React 19 UI, and containerized deployment infrastructure.
+
+---
+
+## 🛠️ Technology Stack
+
+| Domain | Technologies |
+| :--- | :--- |
+| **Frontend Architecture** | **React 19**, **TypeScript**, **Vite**, **Tailwind CSS**, **Lucide Icons**, **Recharts**, Canvas-Confetti |
+| **Backend & Microservices** | **Python 3.11**, **FastAPI**, **Uvicorn ASGI**, Pydantic Schemas, ReportLab, python-docx, python-pptx |
+| **AI & Document Reasoning** | **Google Gemini 2.5 Flash / Pro** (Autonomous multi-document circularization & unscripted reasoning) |
+| **Security & Privacy** | **On-Prem Regex & NER Sovereign Redaction Shield** (CBK Civil ID and sovereign PII protection) |
+| **Cloud & Deployment** | **Railway** (Backend API Container), **Netlify** (Global Edge CDN Frontend), **Git / GitHub** |
 
 ---
 
